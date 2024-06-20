@@ -18,6 +18,4 @@
 #include <iomanip>
 #include <fstream>
 
-
-
 // TODO: reference additional headers your program requires here

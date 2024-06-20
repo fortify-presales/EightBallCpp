@@ -1,8 +1,9 @@
 #include "stdafx.h"
-#include "pugixml.hpp"
+//#include "pugixml.hpp"
+#include <zlib.h>
 
 using namespace std;
-using namespace pugi;
+//using namespace pugi;
 
 string getAnswer();
 
@@ -12,9 +13,41 @@ const int BUFSIZE = 255;
 const bool debug = false;
 const string magicEightBall = "The Magic 8 Ball says:";
 
-int main(int argc, char* argv[])
-{
-    char keywords[BUFSIZE] = "";
+int main(int argc, char* argv[]) {
+	
+	/*
+    char buffer_in[256] = {"Conan is a MIT-licensed, Open Source package manager for C and C++ development, "
+                           "allowing development teams to easily and efficiently manage their packages and "
+                           "dependencies across platforms and build systems."};
+    char buffer_out[256] = {0};
+
+    z_stream defstream;
+    defstream.zalloc = Z_NULL;
+    defstream.zfree = Z_NULL;
+    defstream.opaque = Z_NULL;
+    defstream.avail_in = (uInt)std::strlen(buffer_in);
+    defstream.next_in = (Bytef*)buffer_in;
+    defstream.avail_out = (uInt)sizeof(buffer_out);
+    defstream.next_out = (Bytef*)buffer_out;
+
+    deflateInit(&defstream, Z_BEST_COMPRESSION);
+    deflate(&defstream, Z_FINISH);
+    deflateEnd(&defstream);
+
+    std::cout << "Uncompressed size is: " << std::strlen(buffer_in) << std::endl;
+    std::cout << "Compressed size is: " << defstream.total_out << std::endl;
+
+    std::cout << "ZLIB VERSION: " << zlibVersion() << std::endl;
+
+    int length = 10;
+    int* memory = new int[length];
+    for (int i = 0; i < length; i++) {
+        memory[i] = i;
+    }
+    delete[] memory;
+	*/
+	
+	char keywords[BUFSIZE] = "";
     
     srand(time(0));
 
@@ -40,11 +73,11 @@ int main(int argc, char* argv[])
         {
             string question;
 
-            //prompt for and get the question
+            // prompt for and get the question
             cout << "What is your question?  (Enter 'x' to exit)" << endl;
             getline(cin, question);
 
-            //this assumes that the user enters a lower case x
+            // this assumes that the user enters a lower case x
             if (question.compare(exitString) == 0)
                 keepGoing = false;
             else
@@ -54,11 +87,16 @@ int main(int argc, char* argv[])
             }
         }
     }
-
-    return 0;
+	
+    return EXIT_SUCCESS;
 }
 
-
+string getAnswer()
+{
+	return "I have no answer";
+}
+	
+/*
 string getAnswer()
 {
     int index = rand() % SIZEOF_ANSWERS;
@@ -92,3 +130,4 @@ string getAnswer()
 
     return "I have no answer";
 }
+*/
