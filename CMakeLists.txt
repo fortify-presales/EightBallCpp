@@ -12,7 +12,9 @@ endforeach()
 list (REMOVE_DUPLICATES EIGHTBALL_INCLUDE_DIRS)
 
 find_package(ZLIB REQUIRED)
+find_package(pugixml REQUIRED)
 
 add_executable(${PROJECT_NAME} ${EIGHTBALL_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${EIGHTBALL_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} ZLIB::ZLIB)
+target_link_libraries(${PROJECT_NAME} pugixml::pugixml)

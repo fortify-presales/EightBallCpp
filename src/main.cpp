@@ -1,43 +1,18 @@
-#include "stdafx.h"
-//#include "pugixml.hpp"
 #include <zlib.h>
+#include "stdafx.h"
+#include "Answer.h"
 
 using namespace std;
-//using namespace pugi;
-
-string getAnswer();
 
 const string exitString = "x";
-const int SIZEOF_ANSWERS = 20;
 const int BUFSIZE = 255;
 const bool debug = false;
 const string magicEightBall = "The Magic 8 Ball says:";
 
 int main(int argc, char* argv[]) {
-	
-	/*
-    char buffer_in[256] = {"Conan is a MIT-licensed, Open Source package manager for C and C++ development, "
-                           "allowing development teams to easily and efficiently manage their packages and "
-                           "dependencies across platforms and build systems."};
-    char buffer_out[256] = {0};
 
-    z_stream defstream;
-    defstream.zalloc = Z_NULL;
-    defstream.zfree = Z_NULL;
-    defstream.opaque = Z_NULL;
-    defstream.avail_in = (uInt)std::strlen(buffer_in);
-    defstream.next_in = (Bytef*)buffer_in;
-    defstream.avail_out = (uInt)sizeof(buffer_out);
-    defstream.next_out = (Bytef*)buffer_out;
-
-    deflateInit(&defstream, Z_BEST_COMPRESSION);
-    deflate(&defstream, Z_FINISH);
-    deflateEnd(&defstream);
-
-    std::cout << "Uncompressed size is: " << std::strlen(buffer_in) << std::endl;
-    std::cout << "Compressed size is: " << defstream.total_out << std::endl;
-
-    std::cout << "ZLIB VERSION: " << zlibVersion() << std::endl;
+    cout << "MAGIC 8 BALL" << endl;
+    cout << "ZLIB VERSION: " << zlibVersion() << endl;
 
     int length = 10;
     int* memory = new int[length];
@@ -45,8 +20,8 @@ int main(int argc, char* argv[]) {
         memory[i] = i;
     }
     delete[] memory;
-	*/
 	
+    Answer answer;
 	char keywords[BUFSIZE] = "";
     
     srand(time(0));
@@ -65,7 +40,7 @@ int main(int argc, char* argv[]) {
 
         cout << keywords << endl;
         cout << magicEightBall << endl;
-        cout << getAnswer() << endl;
+        cout << answer.getAnswer() << endl;
     } else {
         bool keepGoing = true;
 
@@ -83,7 +58,7 @@ int main(int argc, char* argv[]) {
             else
             {
                 cout << magicEightBall << endl;
-                cout << getAnswer() << endl;
+                cout << answer.getAnswer() << endl;
             }
         }
     }
@@ -91,11 +66,6 @@ int main(int argc, char* argv[]) {
     return EXIT_SUCCESS;
 }
 
-string getAnswer()
-{
-	return "I have no answer";
-}
-	
 /*
 string getAnswer()
 {
@@ -105,7 +75,7 @@ string getAnswer()
     sprintf(buffer, "/Answers/Answer[@Id='%d']", index);
 
     xml_document doc;
-    xml_parse_result result = doc.load_file("eightball.xml");
+    xml_parse_result result = doc.load_file("data/eightball.xml");
 
     if (debug) {
         if (result)
@@ -129,5 +99,4 @@ string getAnswer()
     }
 
     return "I have no answer";
-}
-*/
+}*/
