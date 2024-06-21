@@ -1,50 +1,118 @@
 # EightBallCpp
 
-This is a C++ version of the Fortify EightBall demo application.
+This is an enhanced C++ version of the Fortify EightBall demo application. It uses CMake for the build
+process and Conan to managed open source library dependencies.
 
-You will required Visual Studio 2019 or later. It may work in earlier versions but this has
-not been tested. Build the application from the IDE or command line using "msbuild" and then
-you can run it as follows:
+Pre-requisites:
+===============
+
+The following software is required to be installed for this project.
+
+ - Fortify Static Code Analyzer 24.2 or later
+ - Debricked CLI (and Debricked Enterprise account)
+ - Visual Studio Professional 2022 or later (for Windows build)
+ - CMake >= 3.15
+ - Python >= 3.6
+ 
+Install Conan
+=============
 
 ```
-> .\Debug\EightBall.exe am i beautiful
+python -m venv .
+pip install conan
+conan profile detect --force
+```
+
+This will create a `default` profile based on your environment, you can check it with:
+
+```
+conan profile path default
+conan profile show
+```
+
+Note: the default profile will set to a `Release` build but we will be overriding with `Debug` in our examples.
+
+Build the Application
+=====================
+
+To build the application carry out the following:
+
+Windows:
+
+```
+> clean.bat
+> build.bat
+```
+
+Linux/UNIX:
+
+```
+$ clean.sh
+$ build.sh
+```
+
+You can check the application works by running it as follows:
+
+```
+> .\build\Debug\EightBall.exe am i beautiful
 You have entered a question with 3 words:
 Am i beautiful?
 The Magic 8 Ball says:
 The outlook is poor
 ```
 
-You can scan the source code with Fortify using the IDE plugin or from the command line.
-To scan from the command line you will need an `.env` environment file similar to the following:
+
+Fortify SAST Scan
+=================
+
+For Fortify Static Code Analyzer to work, the `sourceanalyzer` executable needs to act as a "shim" for
+each "compile" command. When using CMake and Conan this can get quite complicated as the build files
+are generated. Since on Windows MSBuild is used it is possible to simply wrap the `msbuild` build command
+with `sourceananalyzer`. However, you need to make sure that all of the appropriate Visual Studio
+environment variables are set. To do this make sure you are running the following commands from a Visual Studio
+Developer's Command prompt (or use the `setvsenv.ps` script to set them).
+
+Windows:
 
 ```
-# The URL of Software Security Center
-SSC_URL=http://YOUR-SERVER_:8080/ssc
-SSC_USERNAME=admin
-SSC_PASSWORD=admin
-# SSC Authentication Token (recommended to use CIToken)
-SSC_AUTH_TOKEN=XXXX
-# Name of the application in SSC
-SSC_APP_NAME=EightBallCpp
-# Name of the application version in SSC
-SSC_APP_VER_NAME=main
-FOD_API_URL=https://api.emea.fortify.com
-FOD_API_KEY=XXX
-FOD_API_SECRET=YYY
+scan.bat
 ```
 
-The SSC and FOD settings are only used if set the appropriate flags in the `bin\fortify-sca.ps1` file.
-
-You should then startup a new "Developer PowerShell" from Visual Studio and enter the following:
+Linux/UNIX:
 
 ```
-.\bin\fortify-sca.ps1
+TBD
 ```
 
-If scanning locally you can open the resultant `EightBallCpp.fpr` with the Fortify Audit Workbench 
-executable `auditworkbench`.
+If the scan is successful there will be a file called `EightBallCpp.fpr` created which you can
+open with Fortify Audit Workbench:
 
+```
+> auditworkbench EightBallCpp.fpr
+```
+
+Fortify ScanCentral SAST Scan
+=============================
+
+TBD
+
+Fortify on Demand Scan
+======================
+
+TBD
+
+Debricked SCA Scan
+==================
+
+Currently Debricked does not have any native support for Conan, however Conan can create
+CycloneDX SBOMs as in the following:
+
+```
+pip install cyclonedx-conan
+cyclonedx-conan .\conanfile.txt > sbom.json
+debricked scan -r EightBallCpp -t YOUR_DEBRICKED_ACCESS_TOKEN
+```
 ---
 
-Kevin Lee - kevin.lee@microfocus.com
+Kevin Lee - klee2@opentext.com
 

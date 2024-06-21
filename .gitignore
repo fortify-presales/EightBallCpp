@@ -25,17 +25,25 @@ hs_err_pid*
 # gradle build
 .gradle
 
+# Python
+Lib
+Scripts
+pyvenv.cfg
+
+# CMake
+CmakePresets.json
+CmakeUserPresets.json
+
 # Environment specific files
 .env
 
-.fpr
-.pdf
 /.vs
 *.filters
 *.user
 *.TMP
 /Debug
-/packages/pugixml.1.12.0
 /.fortify
 *.fpr
 *.mbs
+sbom.json
+
