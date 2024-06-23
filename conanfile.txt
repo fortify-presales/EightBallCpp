@@ -5,3 +5,6 @@ pugixml/1.14
 [generators]
 CMakeDeps
 CMakeToolchain
+
+[tool_requires]
+ninja/1.11.0

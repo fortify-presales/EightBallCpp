@@ -37,24 +37,20 @@ Build the Application
 
 To build the application carry out the following:
 
-Windows:
+```
+conan install . --output-folder=build --build=missing --settings=build_type=Release -c tools.cmake.cmaketoolchain:generator=Ninja
+cd build
+.\conanbuild.bat
+cmake .. -G Ninja -D'CMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake' -D'CMAKE_EXPORT_COMPILE_COMMANDS=ON'
+cmake --build . --clean-first --config Release --verbose
+cd ..
+```
 
-```
-> clean.bat
-> build.bat
-```
-
-Linux/UNIX:
-
-```
-$ clean.sh
-$ build.sh
-```
 
 You can check the application works by running it as follows:
 
 ```
-> .\build\Debug\EightBall.exe am i beautiful
+> .\build\EightBall.exe am i beautiful
 You have entered a question with 3 words:
 Am i beautiful?
 The Magic 8 Ball says:
@@ -67,15 +63,18 @@ Fortify SAST Scan
 
 For Fortify Static Code Analyzer to work, the `sourceanalyzer` executable needs to act as a "shim" for
 each "compile" command. When using CMake and Conan this can get quite complicated as the build files
-are generated. Since on Windows MSBuild is used it is possible to simply wrap the `msbuild` build command
-with `sourceananalyzer`. However, you need to make sure that all of the appropriate Visual Studio
-environment variables are set. To do this make sure you are running the following commands from a Visual Studio
-Developer's Command prompt (or use the `setvsenv.ps` script to set them).
+are generated. The approach taken in this project is to generate the
+compile commands through the `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON` option
+and then to extract and construct the `sourceananalyzer` commands on the
+fly. Currently this has only been implemented/tested on Windows for `cl.exe`
+compiler.
+
+To run the Fortify Scan:
 
 Windows:
 
 ```
-scan.bat
+.\bin\fortify-sast.ps1
 ```
 
 Linux/UNIX:
@@ -88,7 +87,7 @@ If the scan is successful there will be a file called `EightBallCpp.fpr` created
 open with Fortify Audit Workbench:
 
 ```
-> auditworkbench EightBallCpp.fpr
+.\auditworkbench buil\EightBallCpp.fpr
 ```
 
 Fortify ScanCentral SAST Scan
@@ -104,8 +103,7 @@ TBD
 Debricked SCA Scan
 ==================
 
-Currently Debricked does not have any native support for Conan, however Conan can create
-CycloneDX SBOMs as in the following:
+Currently Debricked does not have any native support for Conan, however Conan can create CycloneDX SBOMs as in the following:
 
 ```
 pip install cyclonedx-conan

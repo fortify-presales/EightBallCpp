@@ -2,7 +2,14 @@
 #ifndef ANSWER_H
 #define ANSWER_H
 
-#include "stdafx.h"
+#include <stdio.h>
+#include <tchar.h>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <iomanip>
+#include <fstream>
 
 using namespace std;
 
