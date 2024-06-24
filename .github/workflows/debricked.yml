@@ -13,11 +13,11 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-    
+
 # Global environment variables
 env:
   DEFAULT_APP_NAME: "EightBallCpp"
-  PYTHON_VERSION: "7.3"
+  PYTHON_VERSION: "3.12.4"
 
 jobs:
   vulnerabilities-scan:
