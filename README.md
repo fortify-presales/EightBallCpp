@@ -12,7 +12,7 @@ The following software is required to be installed for this project.
  - Debricked CLI (and Debricked Enterprise account)
  - Visual Studio Professional 2022 or later (for Windows build)
  - CMake >= 3.29.6
- - Ninha >= 1.12.1
+ - Ninja >= 1.12.1
  - Python >= 3.6
 
 Setup Environment
@@ -26,6 +26,7 @@ Install Conan
 
 ```
 python -m venv .
+.\Scripts\Activate.ps1
 pip install conan
 conan profile detect --force
 ```
@@ -147,9 +148,11 @@ debricked scan -r EightBallCpp -t $Env:DEBRICKED_TOKEN
 Conan 1.4.x
 
 ```
+python -m venv .
+.\Scripts\Activate.ps1
 pip install cyclonedx-conan
 cyclonedx-conan .\conanfile.txt > sbom.json
-debricked scan -r EightBallCpp -t $Env:DEBRICKED_TOKEN
+debricked scan -r EightBallCpp -e "Lib\**" -t $Env:DEBRICKED_TOKEN
 ```
 ---
 

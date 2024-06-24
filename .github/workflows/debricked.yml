@@ -1,6 +1,20 @@
 name: Debricked scan
 
-on: [push, pull_request]
+on:
+  # Triggers the workflow on push or pull request events but only for the main and dev branches
+  push:
+    paths:
+      - 'conanfile.txt'
+      - 'conanfile.py'
+    branches:
+      - '**'        # matches every branch
+  pull_request:
+    branches: [ main, develop ]
+
+# Global environment variables
+env:
+  DEFAULT_APP_NAME: "EightBallCpp"
+  PYTHON_VERSION: "7.3"
 
 jobs:
   vulnerabilities-scan:
@@ -9,16 +23,22 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: ${{ env.PYTHON_VERSION }}
     - name: Install Conan SBOM generator # https://github.com/CycloneDX/cyclonedx-conan
       run: |
-          python -m pip install cyclonedx-conan 
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install cyclonedx-conan
           python -m pip install markupsafe==2.0.1
-          python -m pip install -U conan
+          echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
+          echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
     - name: Generate Conan SBOM
       run: |
           cyclonedx-conan conanfile.txt | sed -n -e '/^{/,$p' > sbom.json # cyclonedx-conan PATH_TO_conanfile.txt > SBOM_NAME_FILE
-          ls
-    - uses: debricked/actions@v4
+    - run: curl -L https://github.com/debricked/cli/releases/latest/download/cli_linux_x86_64.tar.gz | tar -xz debricked
+    - name: Run debricked scan
+      shell: bash
+      run: |
+        ./debricked scan -r "${DEFAULT_APP_NAME}" --access-token="${DEBRICKED_TOKEN}" -e "lib/**" --verbose .
       env:
-          DEBRICKED_TOKEN: ${{ secrets.DEBRICKED_TOKEN }}
+        DEBRICKED_TOKEN: ${{ secrets.DEBRICKED_TOKEN }}

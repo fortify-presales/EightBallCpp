@@ -47,3 +47,4 @@ CmakeUserPresets.json
 *.mbs
 sbom.json
 build
+debricked.fingerprints.txt
