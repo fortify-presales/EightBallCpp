@@ -64,8 +64,7 @@ jobs:
       - name: Build
         run: |
           cd build
-          ls
-          ./conanbuild.sh
+          source conanbuild.sh
           cmake --build . --clean-first --config ${{env.BUILD_TYPE}} --verbose
 
   Quality-Gate:

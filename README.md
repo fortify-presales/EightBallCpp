@@ -157,7 +157,7 @@ The SBOM can also be scanned with Fortify on Demand (Debricked Integration) usin
 ```
 Compress-Archive -Path .\sbom.json -DestinationPath FoDPackage.zip -Force
 fcli fod session login [--url YOUR_FOD_URL --client-id YOUR_CLIENT_ID --client-secret YOUR_CLIENT_SECRET]
-fcli fod oss-scan start --release="EightBallCpp:main" -f FoDPackage.zip --store curScan
+fcli fod oss-scan start --release="EightBallCpp [KAL]:main" -f FoDPackage.zip --store curScan
 fcli fod oss-scan wait-for ::curScan::
 ```
 
