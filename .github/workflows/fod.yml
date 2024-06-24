@@ -43,7 +43,7 @@ jobs:
 
   Build-And-Unit-Test:
     # The type of runner that the job will run on
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -64,7 +64,8 @@ jobs:
       - name: Build
         run: |
           cd build
-          .\conanbuild.bat
+          ls
+          .\conanbuild.sh
           cmake --build . --clean-first --config ${{env.BUILD_TYPE}} --verbose
 
   Quality-Gate:

@@ -3,7 +3,6 @@
 #define ANSWER_H
 
 #include <stdio.h>
-#include <tchar.h>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
