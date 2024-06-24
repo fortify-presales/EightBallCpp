@@ -17,18 +17,13 @@ const int BUFSIZE = 255;
 const bool debug = false;
 const string magicEightBall = "The Magic 8 Ball says:";
 
+string getVersion();
+
 int main(int argc, char* argv[]) {
 
-    cout << "MAGIC 8 BALL" << endl;
-    cout << "ZLIB VERSION: " << zlibVersion() << endl;
-
-    int length = 10;
-    int* memory = new int[length];
-    for(int i = 0; i < length + 1; i++) {
-        memory[i] = i;  // out-of-bounds write
-    }
-    // memory leak
-	// delete[] memory;
+    cout << "MAGIC 8 BALL VERSION:" << getVersion() << endl;
+    cout << "  - using ZLIB version: " << zlibVersion() << endl;
+    cout << "===" << endl;
 
     Answer answer;
 	char keywords[BUFSIZE] = "";
@@ -73,4 +68,9 @@ int main(int argc, char* argv[]) {
     }
 	
     return EXIT_SUCCESS;
+}
+
+string getVersion() 
+{
+    return "1.0";
 }
