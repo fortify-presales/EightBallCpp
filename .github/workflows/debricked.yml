@@ -20,7 +20,7 @@ env:
   PYTHON_VERSION: "3.12.4"
 
 jobs:
-  vulnerabilities-scan:
+  Debricked-SCA:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -42,6 +42,6 @@ jobs:
     - name: Run debricked scan
       shell: bash
       run: |
-        ./debricked scan -r "${DEFAULT_APP_NAME}" --access-token="${DEBRICKED_TOKEN}" -e "lib/**" --verbose .
+        ./debricked scan -r "${DEFAULT_APP_NAME}" --access-token="${DEBRICKED_TOKEN}" -e "lib/**" -e ".venv/**" --verbose .
       env:
         DEBRICKED_TOKEN: ${{ secrets.DEBRICKED_TOKEN }}

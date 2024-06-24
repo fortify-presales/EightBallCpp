@@ -9,7 +9,7 @@ Pre-requisites:
 The following software is required to be installed for this project.
 
  - Fortify Static Code Analyzer 24.2 or later
- - Debricked CLI (and Debricked Enterprise account)
+ - Debricked CLI (with Debricked Enterprise account)
  - Visual Studio Professional 2022 or later (for Windows build)
  - CMake >= 3.29.6
  - Ninja >= 1.12.1
@@ -27,7 +27,7 @@ Install Conan
 ```
 python -m venv .
 .\Scripts\Activate.ps1
-pip install conan
+pip install conan [--upgrade]
 conan profile detect --force
 ```
 
@@ -128,22 +128,15 @@ upload it to Fortify on Demand and start the scan as in the following:
 ```
 Compress-Archive -Path .\EightBallCpp.mbs -DestinationPath FoDPackage.zip -Force
 fcli fod session login [--url YOUR_FOD_URL --client-id YOUR_CLIENT_ID --client-secret YOUR_CLIENT_SECRET]
-fcli fod sast-scan start --release="EightBallCpp [KAL]:main" -f FoDPackage.zip --store curScan
+fcli fod sast-scan start --release="EightBallCpp:main" -f FoDPackage.zip --store curScan
 fcli fod sast-scan wait-for ::curScan::
 ```
 
 Debricked SCA Scan
 ==================
 
-Currently Debricked does not have any native support for Conan, however Conan can create CycloneDX SBOMs as in the following:
-
-Conan 2.x
-
-```
-conan config install https://github.com/conan-io/conan-extensions.git
-conan sbom:cyclonedx --format 1.4_json . > sbom.json
-debricked scan -r EightBallCpp -t $Env:DEBRICKED_TOKEN
-```
+Currently Debricked does not have any native support for Conan, however Conan can create CycloneDX SBOMs and these files
+can be scanned. To generate an SBOM and upload it to debricked you can carry out the following:
 
 Conan 1.4.x
 
@@ -154,6 +147,22 @@ pip install cyclonedx-conan
 cyclonedx-conan .\conanfile.txt > sbom.json
 debricked scan -r EightBallCpp -e "Lib\**" -t $Env:DEBRICKED_TOKEN
 ```
+
+Conan 2.x
+
+TBD
+
+The SBOM can also be scanned with Fortify on Demand (Debricked Integration) using the following:
+
+```
+Compress-Archive -Path .\sbom.json -DestinationPath FoDPackage.zip -Force
+fcli fod session login [--url YOUR_FOD_URL --client-id YOUR_CLIENT_ID --client-secret YOUR_CLIENT_SECRET]
+fcli fod oss-scan start --release="EightBallCpp:main" -f FoDPackage.zip --store curScan
+fcli fod oss-scan wait-for ::curScan::
+```
+
+There is also a GitHub Action [debricked.yml](.github/workflows/debricked.yml) included to carry this out automatically.
+
 ---
 
 Kevin Lee - klee2@opentext.com

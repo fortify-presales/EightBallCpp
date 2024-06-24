@@ -2,6 +2,8 @@
 zlib/1.2.11
 pugixml/1.14
 sqlite3/3.42.0
+http_parser/2.9.2
+json-c/0.14
 
 [generators]
 CMakeDeps
