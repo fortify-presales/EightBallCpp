@@ -35,6 +35,7 @@ on:
 # Global environment variables
 env:
   BUILD_TYPE: "Release"
+  CMAKE_PRESET: "conan-release"
   DEFAULT_APP_NAME: "EightBallCpp"
   PYTHON_VERSION: "3.12.4"
 
@@ -52,13 +53,13 @@ jobs:
       - name: Get Conan
         uses: turtlebrowser/get-conan@main
       - name: Create default profile
-        run: conan profile new default --detect
+        run: conan profile detect --force
       - name: Update profile
         run: conan profile update settings.compiler.libcxx=libstdc++11 default
       - name: Install dependencies
         run: conan install . --output-folder=build --build=missing --settings=build_type=${{env.BUILD_TYPE}} -c tools.cmake.cmaketoolchain:generator=Ninja
       - name: Configure CMake
-        run: cmake --preset conan-release
+        run: cmake --preset ${{env.CMAKE_PRESET}}
       - name: Build
         run: |
           cd build
