@@ -152,12 +152,18 @@ Conan 2.x
 
 TBD
 
+The SBOM uploaded to Debricked can be imported into Fortify Software Security Center using the following:
+
+```
+fcli ssc artifact import-debricked --appversion="EightBallCpp:main" --repository=EightBallCpp --branch=main -t YOUR_DEBRICKED_TOKEN
+```
+
 The SBOM can also be scanned with Fortify on Demand (Debricked Integration) using the following:
 
 ```
 Compress-Archive -Path .\sbom.json -DestinationPath FoDPackage.zip -Force
 fcli fod session login [--url YOUR_FOD_URL --client-id YOUR_CLIENT_ID --client-secret YOUR_CLIENT_SECRET]
-fcli fod oss-scan start --release="EightBallCpp [KAL]:main" -f FoDPackage.zip --store curScan
+fcli fod oss-scan start --release="EightBallCpp:main" -f FoDPackage.zip --store curScan
 fcli fod oss-scan wait-for ::curScan::
 ```
 
