@@ -8,25 +8,25 @@ Pre-requisites:
 
 The following software is required to be installed for this project.
 
- - Fortify Static Code Analyzer 24.2 or later
- - Debricked CLI (with Debricked Enterprise account)
- - Visual Studio Professional 2022 or later (for Windows build)
+ - Fortify Static Code Analyzer >= 24.2 (with Fortify License)
+ - Visual Studio Professional >= 2022 (if building on Windows)
  - CMake >= 3.29.6
  - Ninja >= 1.12.1
  - Python >= 3.6
+ - Debricked CLI (with Debricked Enterprise account)
 
 Setup Environment
 =================
 
 The build environment, e.g. compilers, linkers etc needs to be set before executing
-any commands. On Windows you should start a "x64 Native Tools Command Prompt for VS 2022".
+any commands. On Windows you should start a command prompt: "x64 Native Tools Command Prompt for VS 2022".
 
 Install Conan
 =============
 
 ```
 python -m venv .
-.\Scripts\Activate.ps1
+.\Scripts\Activate.ps1 (Windows)
 pip install conan [--upgrade]
 conan profile detect --force
 ```
@@ -37,8 +37,6 @@ This will create a `default` profile based on your environment, you can check it
 conan profile path default
 conan profile show
 ```
-
-Note: the default profile will set to a `Release` build but we will be overriding with `Debug` in our examples.
 
 Build the Application
 =====================
@@ -53,6 +51,7 @@ cd build
 cmake --build . --clean-first --config Release --verbose
 ```
 
+Note: some of the libraries used might need to be rebuilt for your environment and so the first command might take a while.
 
 You can check the application works by running it as follows:
 
@@ -128,7 +127,7 @@ upload it to Fortify on Demand and start the scan as in the following:
 ```
 Compress-Archive -Path .\EightBallCpp.mbs -DestinationPath FoDPackage.zip -Force
 fcli fod session login [--url YOUR_FOD_URL --client-id YOUR_CLIENT_ID --client-secret YOUR_CLIENT_SECRET]
-fcli fod sast-scan start --release="EightBallCpp:main" -f FoDPackage.zip --store curScan
+fcli fod sast-scan start --release="EightBallCpp [KAL]:main" -f FoDPackage.zip --store curScan
 fcli fod sast-scan wait-for ::curScan::
 ```
 

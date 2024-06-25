@@ -8,6 +8,7 @@ find_package(pugixml REQUIRED)
 find_package(SQLite3 REQUIRED)
 find_package(http_parser REQUIRED)
 find_package(json-c REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 add_executable(${PROJECT_NAME} src/main.cpp
     src/Database.h
@@ -23,3 +24,4 @@ target_link_libraries(${PROJECT_NAME} pugixml::pugixml)
 target_link_libraries(${PROJECT_NAME} SQLite::SQLite3)
 target_link_libraries(${PROJECT_NAME} http_parser::http_parser)
 target_link_libraries(${PROJECT_NAME} json-c::json-c)
+target_link_libraries(${PROJECT_NAME} openssl::openssl)
