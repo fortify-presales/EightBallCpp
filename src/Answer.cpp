@@ -23,6 +23,10 @@ Answer::Answer(bool debug) {
     debug = debug;
 }
 
+Answer::~Answer() {
+    
+}
+
 string Answer::getAnswer()
 {
     int index = rand() % SIZEOF_ANSWERS;
@@ -31,7 +35,7 @@ string Answer::getAnswer()
     sprintf(buffer, "/Answers/Answer[@Id='%d']", index);
 
     xml_document doc;
-    xml_parse_result result = doc.load_file("data/eightball.xml");
+    xml_parse_result result = doc.load_file("../data/eightball.xml");
 
     if (debug) {
         if (result)

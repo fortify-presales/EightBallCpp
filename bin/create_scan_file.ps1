@@ -42,10 +42,10 @@ if (-not (Test-Path $CompileCommandsFile)) {
 Write-Host "Creating $FortifyScanFile in $BuildDir"
 
 Push-Location -Path $BuildDir
-if ($FortifyScanFile) {
+if (Test-Path $FortifyScanFile) {
     Remove-Item -Force $FortifyScanFile
 }
-"@ECHO ON" | Out-File -Encoding UTF8 -Append $FortifyScanFile    
+"@ECHO ON" | Out-File -Encoding UTF8 $FortifyScanFile    
 
 # Create Translation commands
 $CompileCommands = Get-Content $CompileCommandsFile -Raw | ConvertFrom-Json 
@@ -57,8 +57,7 @@ foreach ($command in $CompileCommands.command)
 }
 
 # Create MBS file in case we need it
-"sourceanalyzer '-Dcom.fortify.sca.ProjectRoot=.fortify' -b ""$AppName"" -debug -verbose ^`
-    '-Dcom.fortify.sca.MobileBuildSessions=true' -export-build-session ""$($AppName).mbs""" `
+"sourceanalyzer '-Dcom.fortify.sca.ProjectRoot=.fortify' $JVMArgs $ScanSwitches -b ""$AppName"" -debug -verbose '-Dcom.fortify.sca.MobileBuildSessions=true' -export-build-session ""$($AppName).mbs""" `
     | Out-File -Encoding UTF8 -Append $FortifyScanFile
 
 # Create Scan command    
@@ -72,8 +71,6 @@ foreach ($command in $CompileCommands.command)
 # Add scan summary command
 "fprutility -information -analyzerIssueCounts -project ""$($AppName).fpr""" `
     | Out-File -Encoding UTF8 -Append $FortifyScanFile
-
-"PAUSE" | Out-File -Encoding UTF8 -Append $FortifyScanFile    
 
 Pop-Location
 

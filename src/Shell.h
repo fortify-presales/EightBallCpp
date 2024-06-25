@@ -1,6 +1,6 @@
-// Answer.h
-#ifndef ANSWER_H
-#define ANSWER_H
+// Shell.h
+#ifndef SHELL_H
+#define SHELL_H
 
 #include <stdio.h>
 #include <cstdlib>
@@ -12,13 +12,13 @@
 
 using namespace std;
 
-class Answer
+class Shell
 {
 public:
-  Answer();
-  Answer(bool debug);
-  ~Answer();
-  string getAnswer();
+  Shell();
+  Shell(bool debug);
+  int execute(string command);
+  int interactive();
 private:
   bool debug;
 };

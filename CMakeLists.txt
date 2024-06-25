@@ -10,8 +10,11 @@ find_package(http_parser REQUIRED)
 find_package(json-c REQUIRED)
 
 add_executable(${PROJECT_NAME} src/main.cpp
+    src/Database.h
+    src/Database.cpp
     src/Answer.h
     src/Answer.cpp
+    src/Shell.h
     src/Shell.cpp
 )
 target_include_directories(${PROJECT_NAME} PRIVATE ${EIGHTBALL_INCLUDE_DIRS})

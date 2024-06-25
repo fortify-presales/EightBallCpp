@@ -1,22 +1,22 @@
 ﻿<Answers version="1">
-  <Answer Id="1" Type="Affirmative" Message="It is certain"/>
-  <Answer Id="2" Type="Affirmative" Message="It is decidedly so"/>
-  <Answer Id="3" Type="Affirmative" Message="Without a doubt"/>
-  <Answer Id="4" Type="Affirmative" Message="Yes – definitely"/>
-  <Answer Id="5" Type="Affirmative" Message="You may rely on it"/>
-  <Answer Id="6" Type="Affirmative" Message="As I see it, yes"/>
-  <Answer Id="7" Type="Affirmative" Message="Most likely"/>
-  <Answer Id="8" Type="Affirmative" Message="Outlook good"/>
-  <Answer Id="9" Type="Affirmative" Message="Yes"/>
-  <Answer Id="10" Type="Affirmative" Message="Signs point to yes"/>
-  <Answer Id="11" Type="Non Commital" Message="Reply hazy, try again"/>
-  <Answer Id="12" Type="Non Commital" Message="Ask again later"/>
-  <Answer Id="13" Type="Non Commital" Message="Better not tell you now"/>
-  <Answer Id="14" Type="Non Commital" Message="Cannot predict now"/>
-  <Answer Id="15" Type="Non Commital" Message="Concentrate and ask again"/>
-  <Answer Id="16" Type="Negative" Message="Don't count on i"/>
-  <Answer Id="17" Type="Negative" Message="My reply is no"/>
-  <Answer Id="18" Type="Negative" Message="My sources say no"/>
-  <Answer Id="19" Type="Negative" Message="Outlook not so good"/>
-  <Answer Id="20" Type="Negative" Message="Very doubtful"/>
+  <Answer Id="1" Type="Affirmative" Message="It is certain."/>
+  <Answer Id="2" Type="Affirmative" Message="It is decidedly so."/>
+  <Answer Id="3" Type="Affirmative" Message="Without a doubt."/>
+  <Answer Id="4" Type="Affirmative" Message="Yes – definitely."/>
+  <Answer Id="5" Type="Affirmative" Message="You may rely on it."/>
+  <Answer Id="6" Type="Affirmative" Message="As I see it, yes."/>
+  <Answer Id="7" Type="Affirmative" Message="Most likely."/>
+  <Answer Id="8" Type="Affirmative" Message="Outlook good."/>
+  <Answer Id="9" Type="Affirmative" Message="Yes."/>
+  <Answer Id="10" Type="Affirmative" Message="Signs point to yes."/>
+  <Answer Id="11" Type="Non Commital" Message="Reply hazy, try again."/>
+  <Answer Id="12" Type="Non Commital" Message="Ask again later."/>
+  <Answer Id="13" Type="Non Commital" Message="Better not tell you now."/>
+  <Answer Id="14" Type="Non Commital" Message="Cannot predict now."/>
+  <Answer Id="15" Type="Non Commital" Message="Concentrate and ask again."/>
+  <Answer Id="16" Type="Negative" Message="Don't count on it."/>
+  <Answer Id="17" Type="Negative" Message="My reply is no."/>
+  <Answer Id="18" Type="Negative" Message="My sources say no."/>
+  <Answer Id="19" Type="Negative" Message="Outlook not so good."/>
+  <Answer Id="20" Type="Negative" Message="Very doubtful."/>
 </Answers>

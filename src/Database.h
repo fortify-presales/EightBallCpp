@@ -1,6 +1,6 @@
-// Answer.h
-#ifndef ANSWER_H
-#define ANSWER_H
+// Database.h
+#ifndef DATABASE_H
+#define DATABASE_H
 
 #include <stdio.h>
 #include <cstdlib>
@@ -12,13 +12,13 @@
 
 using namespace std;
 
-class Answer
+class Database
 {
 public:
-  Answer();
-  Answer(bool debug);
-  ~Answer();
-  string getAnswer();
+  Database();
+  Database(bool debug);
+  ~Database();
+  string getAnswer(string question);
 private:
   bool debug;
 };
