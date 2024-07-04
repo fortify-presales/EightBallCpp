@@ -1,6 +1,6 @@
-// Shell.h
-#ifndef SHELL_H
-#define SHELL_H
+// Shell.hpp
+#ifndef SHELL_HPP
+#define SHELL_HPP
 
 #include <stdio.h>
 #include <cstdlib>

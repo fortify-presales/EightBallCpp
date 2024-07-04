@@ -8,7 +8,78 @@
     <Description><![CDATA[]]></Description>
     <Rules version="3.2">
         <RuleDefinitions>
+        	<ControlflowRule formatVersion="3.2" language="cpp">
+        		<MetaInfo>
+        			<Group name="package">NIST</Group>
+        			<Group name="altcategoryCWE">CWE ID 732</Group>
+        		</MetaInfo>
+        	    <RuleID>6EC66135-4650-4421-898F-B217286EF4F9</RuleID>
+        	    <Notes><![CDATA[
+        	    	We have no idea what is "sensitive data" so we are flagging anything
+        	    	More open functions should be added
+        	    	More write functions should be added
+        	    ]]></Notes>
+        	    <VulnCategory>Incorrect Permission Assignment for Critical Resource</VulnCategory>
+        	    <DefaultSeverity>5.0</DefaultSeverity>
+        	    <Description/>
+        	    <FunctionCallIdentifier id="umask">
+	        	    <FunctionIdentifier>
+	        	        <FunctionName>
+	        	            <Value>umask</Value>
+	        	        </FunctionName>
+	        	    </FunctionIdentifier>
+	        	    <Conditional>
+	        	    	<ConstantEq argument="0" value="0" />
+	        	    </Conditional>
+	        	</FunctionCallIdentifier>
+        	    <FunctionCallIdentifier id="open">
+        	    	<FunctionIdentifier>
+        	    	    <FunctionName>
+        	    	        <Value>fopen</Value>
+        	    	    </FunctionName>
+        	    	</FunctionIdentifier>
+        	    	<Conditional>
+        	    		<ConstantMatches argument="1">
+        	    			<Pattern caseInsensitive="true">.*w.*</Pattern>
+        	    		</ConstantMatches>
+        	    	</Conditional>
+        	    </FunctionCallIdentifier>
+        	    <FunctionIdentifier id="write">
+        	        <FunctionName>
+        	            <Value>fprintf</Value>
+        	        </FunctionName>
+        	    </FunctionIdentifier>
+        	    <Definition><![CDATA[
+        	        state start (start);
+        	        state umask;
+        	        state opened;
+        	        state error (error);
 
+        	        var file;
+
+        	        start -> umask { $umask(...) }
+        	        umask -> opened { file = $open(...) }
+        	        opened -> error { $write(file, ...) }
+        	    ]]></Definition>
+        	</ControlflowRule>
+        	<StructuralRule formatVersion="3.4" language="cpp">
+        		<MetaInfo>
+        		    <Group name="package">NIST</Group>
+        		    <Group name="altcategoryCWE">CWE ID 321</Group>
+        		</MetaInfo>
+        	    <RuleID>A218D751-11D9-467B-81C7-EA2A39D86DB4</RuleID>
+        	    <Notes><![CDATA[
+        	    	This should really be: Password Management: Hardcoded Password, but keeping CWE name
+        	    ]]></Notes>
+        	    <VulnCategory>Use of Hard-coded Cryptographic Key</VulnCategory>
+        	    <DefaultSeverity>5.0</DefaultSeverity>
+        	    <Description/>
+        	    <Predicate><![CDATA[
+        	        FunctionCall fc: name == "strcmp"
+        	        	and arguments[0] is [VariableAccess va: variable.name matches "(?i)(.*passw.*|.*pwd.*)"]*
+        	        	and arguments[1] is [StringLiteral s:]*
+        	    ]]></Predicate>
+        	</StructuralRule>
         </RuleDefinitions>
         <ScriptDefinitions>
             <ScriptDefinition formatVersion="21.2" type="lib" name="extra_logging"><![CDATA[

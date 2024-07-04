@@ -5,35 +5,51 @@
 #include <string>
 #include <iomanip>
 #include <fstream>
-
+#include <io.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <zlib.h>
-#include "Answer.h"
-#include "Shell.h"
-#include "Database.h"
+
+#include "Answer.hpp"
+#include "AnswerSQL.hpp"
+#include "AnswerXML.hpp"
+#include "Shell.hpp"
 
 using namespace std;
 
 const string exitString = "x";
 const int BUFSIZE = 255;
-const bool debug = false;
-const bool useDb = false;
 const string magicEightBall = "The Magic 8 Ball says: ";
-char encryptionKey[] = "lakdsljkalkjlksdfkl";
+const char encryptionKey[] = "lakdsljkalkjlksdfkl";
+
+bool debug = false;
+bool useDb = false;
 
 string getVersion();
 
 int main(int argc, char* argv[]) {
 
     char* path = getenv("PATH");
+    if (getenv("8BALL_DEBUG")) {
+        debug = getenv("8BALL_DEBUG");
+    };
+    if (getenv("8BALL_USEDB")) {
+        useDb = getenv("8BALL_DEBUG");
+    }
 
-    cout << "MAGIC 8 BALL VERSION:" << getVersion() << endl;
-    cout << "  - using ZLIB: " << zlibVersion() << endl;
-    if (debug) { cout << "PATH: " << path << endl;}
-    cout << "--------------------" << endl;
+    cout << std::boolalpha;  
+    cout << "MAGIC 8 BALL - Version:" << getVersion() << endl;
+    cout << "-------------------------" << endl;
+    if (debug) { 
+        cout << "  - using ZLIB: " << zlibVersion() << endl;
+        cout << "  - debug: " << debug << endl;
+        cout << "  - PATH: " << path << endl;
+    }
 
-    Answer answer;
+
     Shell shell;
-    Database database;
+    AnswerXML aXML; aXML.setDebug(debug);
+    AnswerSQL aSQL; aSQL.setDebug(debug);
 	char keywords[BUFSIZE] = "";
     
     srand(time(0));
@@ -41,17 +57,21 @@ int main(int argc, char* argv[]) {
     if (argc >= 2) {
         cout << "You have entered a question with " << argc-1 << " words: ";
         for (int i = 1; i < argc; ++i) {
-            char* newArray = new char[strlen(keywords) + strlen(argv[i]) + 2];
+            char* newArray = (char*)malloc (strlen(keywords) + strlen(argv[i]) + 2);
             strcpy(newArray, keywords);
             strcat(newArray, argv[i]);
             strcat(newArray, (i == argc-1 ? "?" : " "));
             strcpy(keywords, newArray);
-            //delete[] newArray;
+            free(newArray);
         }
         keywords[0] = toupper(keywords[0]);
 
         cout << keywords << endl;
-        cout << magicEightBall << answer.getAnswer() << endl;
+        if (useDb) {
+            cout << magicEightBall << aSQL.getRandomAnswer() << endl;
+        } else {
+            cout << magicEightBall << aXML.getRandomAnswer() << endl;
+        }    
     } else {
         bool keepGoing = true;
 
@@ -69,13 +89,14 @@ int main(int argc, char* argv[]) {
             else
             {
                 // log questions
+                umask(0);
                 shell.execute("echo " + question + " >> questions.txt");
                 cout << magicEightBall;
                 string ans;
                 if (useDb) { 
-                    ans = database.getAnswer(question);
+                    ans = aSQL.getAnswerFromKeywords(question);
                 } else {
-                    ans = answer.getAnswer();
+                    ans = aXML.getAnswerFromKeywords(question);
                 }    
                 cout << ans << endl;
             }

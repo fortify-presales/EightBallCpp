@@ -11,11 +11,12 @@ find_package(json-c REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 add_executable(${PROJECT_NAME} src/main.cpp
-    src/Database.h
-    src/Database.cpp
-    src/Answer.h
-    src/Answer.cpp
-    src/Shell.h
+    src/Answer.hpp
+    src/AnswerXML.hpp
+    src/AnswerXML.cpp
+    src/AnswerSQL.hpp
+    src/AnswerSQL.cpp
+    src/Shell.hpp
     src/Shell.cpp
 )
 target_include_directories(${PROJECT_NAME} PRIVATE ${EIGHTBALL_INCLUDE_DIRS})
