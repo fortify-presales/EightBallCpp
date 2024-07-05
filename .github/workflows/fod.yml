@@ -231,7 +231,6 @@ jobs:
           FOD_CLIENT_ID: ${{ secrets.FOD_CLIENT_ID }}
           FOD_CLIENT_SECRET: ${{ secrets.FOD_CLIENT_SECRET }}       
       - name: Fortify Translation
-        working-directory: "build"
         run: |
           if [ -f ${PACKAGE_FILE} ]; then
             rm ${PACKAGE_FILE}
