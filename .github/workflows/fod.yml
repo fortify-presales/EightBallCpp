@@ -241,7 +241,6 @@ jobs:
           SBOM_FILE: "sbom.json"  
           FOD_APP_NAME: ${{ steps.fortify-app-and-rel-name.outputs.app_name }}    
       - name: Fortify Scan
-        working-directory: "build"
         run: |
           fcli fod oss-scan start --release "${FOD_RELEASE_NAME}" -f $PACKAGE_FILE --store curScan --session github-actions
           sleep 10
