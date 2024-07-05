@@ -51,15 +51,23 @@ jobs:
         with:
           # Fetch at least the immediate parents so that if this is a pull request then we can checkout the head.
           fetch-depth: 2
+      - name: Setup Python    
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'           
       - name: Install CMake and Ninja    
         uses: lukka/get-cmake@latest
-      - name: Get Conan
-        uses: turtlebrowser/get-conan@main
-      - name: Create default profile
+      - name: Activate virtualenv
         run: |
+          python -m venv venv
+          source ./venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+      - name: Install Conan
+        run: |
+          pip install conan
           conan profile detect --force
-      - name: Install dependencies
-        run: conan install . --output-folder=build --build=missing --settings=build_type=${{env.BUILD_TYPE}} -c tools.cmake.cmaketoolchain:generator=Ninja
+          conan install . --output-folder=build --build=missing --settings=build_type=${{env.BUILD_TYPE}} -c tools.cmake.cmaketoolchain:generator=Ninja
       - name: Configure CMake
         run: cmake --preset ${{env.CMAKE_PRESET}}
       - name: Build
@@ -108,21 +116,30 @@ jobs:
       #  env:
       #    FOD_APP_NAME: ${{ steps.fortify-app-and-rel-name.outputs.app_name }}
       #    FOD_RELEASE_NAME: ${{ steps.fortify-app-and-rel-name.outputs.release_name }}          
+      - name: Setup Python    
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'           
       - name: Install CMake and Ninja    
         uses: lukka/get-cmake@latest
-      - name: Get Conan
-        uses: turtlebrowser/get-conan@main
-      - name: Create default profile
+      - name: Activate virtualenv
         run: |
+          python -m venv venv
+          source ./venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+      - name: Install Conan
+        run: |
+          pip install conan
           conan profile detect --force
-      - name: Install dependencies
-        run: conan install . --output-folder=build --build=missing --settings=build_type=${{env.BUILD_TYPE}} -c tools.cmake.cmaketoolchain:generator=Ninja
+          conan install . --output-folder=build --build=missing --settings=build_type=${{env.BUILD_TYPE}} -c tools.cmake.cmaketoolchain:generator=Ninja
       - name: Configure CMake
         run: cmake --preset ${{env.CMAKE_PRESET}}
       - name: Build and Translation
         run: |
           cd build
           source conanbuild.sh
+          cmake --build . --clean-first --config ${{env.BUILD_TYPE}} --verbose
           cmake --build . --clean-first --config ${{env.BUILD_TYPE}} --verbose
           sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify ${JVM_ARGS} -b "${FOD_APP_NAME}" -debug -verbose compile_commands.json
           sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify -Dcom.fortify.sca.MobileBuildSessions=true ${JVM_ARGS} -b "${FOD_APP_NAME}" -debug -verbose -export-build-session "${FOD_APP_NAME}.mbs" 
