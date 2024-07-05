@@ -209,14 +209,18 @@ jobs:
           python -m venv venv
           source ./venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
-      - name: Install Conan
+      - name: Install Conan and Generate SBOM
         run: |
           pip install 'cyclonedx-python-lib>=5.0.0,<6'
           pip install conan
           conan profile detect --force
           conan config install https://github.com/conan-io/conan-extensions.git
-          rm -f sbom.json
-          conan sbom:cyclonedx --format 1.4_json --requires gmp/6.2.1 > sbom.json
+          if [ -f ${SBOM_FILE} ]; then
+            rm ${SBOM_FILE}
+          fi
+          conan sbom:cyclonedx --format 1.4_json --requires gmp/6.2.1 | tee ${SBOM_FILE}
+        env:
+          SBOM_FILE: "sbom.json"  
       # Login to Fortify on Demand fcli session
       - name: Login fcli
         shell: bash
@@ -229,10 +233,13 @@ jobs:
       - name: Fortify Translation
         working-directory: "build"
         run: |
-          rm -f ${PACKAGE_FILE}
-          zip ${PACKAGE_FILE} "sbom.json"
+          if [ -f ${PACKAGE_FILE} ]; then
+            rm ${PACKAGE_FILE}
+          fi
+          zip ${PACKAGE_FILE} ${SBOM_FILE}
         env:
           PACKAGE_FILE: "package.zip"
+          SBOM_FILE: "sbom.json"  
           FOD_APP_NAME: ${{ steps.fortify-app-and-rel-name.outputs.app_name }}    
       - name: Fortify Scan
         working-directory: "build"
