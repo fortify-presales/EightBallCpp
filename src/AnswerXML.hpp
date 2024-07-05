@@ -7,9 +7,11 @@
 class AnswerXML: public Answer {
   public:
     AnswerXML();
+    AnswerXML(bool debug);
     ~AnswerXML();
     string getRandomAnswer();
     string getAnswerFromKeywords(std::string keywords);
+    void doSomethingElse();
 };
 
 #endif

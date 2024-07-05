@@ -10,17 +10,13 @@ using namespace pugi;
 
 const int SIZEOF_ANSWERS = 20;
 
-AnswerXML::AnswerXML() {
-    int length = 10;
-    int* memory = new int[length];
-    for(int i = 0; i < length + 1; i++) {
-        memory[i] = i;  // out-of-bounds write
-    }
+AnswerXML::AnswerXML() { }
+
+AnswerXML::AnswerXML(bool debug) {
+    Answer::setDebug(debug);
 }
 
-AnswerXML::~AnswerXML() {
-
-}
+AnswerXML::~AnswerXML() { }
 
 string AnswerXML::getRandomAnswer() {
     int index = rand() % SIZEOF_ANSWERS;
@@ -31,7 +27,7 @@ string AnswerXML::getRandomAnswer() {
     xml_document doc;
     xml_parse_result result = doc.load_file("../data/eightball.xml");
 
-    if (debug) {
+    if (getDebug()) {
         if (result) {
             cout << "XML [" << "eightball.xml" << "] parsed without errors, version: [" << doc.child("Answers").attribute("version").value() << "]\n\n";
         } else {
@@ -54,4 +50,12 @@ string AnswerXML::getRandomAnswer() {
 string AnswerXML::getAnswerFromKeywords(string keywords) {
     // TBD
     return getRandomAnswer();
+}
+
+void AnswerXML::doSomethingElse() {
+    int length = 10;
+    int* memory = new int[length];
+    for(int i = 0; i < length + 1; i++) {
+        memory[i] = i;  // out-of-bounds write
+    }
 }

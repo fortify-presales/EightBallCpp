@@ -5,10 +5,14 @@
 #include <string>
 #include <iomanip>
 #include <fstream>
-#include <io.h>
+#ifdef _WIN32
+    #include <io.h>
+#endif
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <zlib.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 
 #include "Answer.hpp"
 #include "AnswerSQL.hpp"
@@ -29,27 +33,30 @@ string getVersion();
 
 int main(int argc, char* argv[]) {
 
-    char* path = getenv("PATH");
-    if (getenv("8BALL_DEBUG")) {
-        debug = getenv("8BALL_DEBUG");
-    };
-    if (getenv("8BALL_USEDB")) {
-        useDb = getenv("8BALL_DEBUG");
-    }
-
     cout << std::boolalpha;  
-    cout << "MAGIC 8 BALL - Version:" << getVersion() << endl;
-    cout << "-------------------------" << endl;
-    if (debug) { 
-        cout << "  - using ZLIB: " << zlibVersion() << endl;
-        cout << "  - debug: " << debug << endl;
-        cout << "  - PATH: " << path << endl;
-    }
 
+    char* path = getenv("PATH");
+    if (getenv("8BALL_DEBUG")) { debug = true; };
+    if (getenv("8BALL_USEDB")) { useDb = true; }
+
+    SSL_library_init();
+
+    cout << " .-'''-." << endl;
+    cout << "/   _   \\" << endl;
+    cout << "|  (8)  | Magic 8 Ball - Version " << getVersion() << endl;
+    cout << "\\   ^   /" << endl;
+    cout << " '-...-'" << endl;
+
+    if (debug) { 
+        cout << "  - ZLIB: " << zlibVersion() << endl;
+        cout << "  - DEBUG: " << debug << endl;
+        cout << "  - USEDB: " << useDb << endl;
+        cout << " ---" << endl;
+    }
 
     Shell shell;
-    AnswerXML aXML; aXML.setDebug(debug);
-    AnswerSQL aSQL; aSQL.setDebug(debug);
+    AnswerXML aXML = AnswerXML(debug);
+    AnswerSQL aSQL = AnswerSQL(debug);
 	char keywords[BUFSIZE] = "";
     
     srand(time(0));
@@ -75,8 +82,7 @@ int main(int argc, char* argv[]) {
     } else {
         bool keepGoing = true;
 
-        while (keepGoing)
-        {
+        while (keepGoing) {
             string question;
 
             // prompt for and get the question
@@ -86,8 +92,7 @@ int main(int argc, char* argv[]) {
             // this assumes that the user enters a lower case x
             if (question.compare(exitString) == 0)
                 keepGoing = false;
-            else
-            {
+            else {
                 // log questions
                 umask(0);
                 shell.execute("echo " + question + " >> questions.txt");
@@ -106,7 +111,6 @@ int main(int argc, char* argv[]) {
     return EXIT_SUCCESS;
 }
 
-string getVersion() 
-{
+string getVersion() {
     return "1.0";
 }

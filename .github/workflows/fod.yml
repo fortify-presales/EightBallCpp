@@ -43,7 +43,8 @@ jobs:
 
   Build-And-Unit-Test:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -68,7 +69,8 @@ jobs:
           cmake --build . --clean-first --config ${{env.BUILD_TYPE}} --verbose
 
   Quality-Gate:
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: ${{ always() }}
     needs: [ Build-And-Unit-Test ]
     steps:
@@ -80,7 +82,8 @@ jobs:
       # TBD
 
   FoD-SAST-Scan:
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: ${{ (github.event_name == 'push') || (github.event_name == 'pull_request') || (github.event.inputs.runFoDSASTScan == 'true') }}
     steps:
       - name: Checkout
@@ -104,11 +107,32 @@ jobs:
       #  env:
       #    FOD_APP_NAME: ${{ steps.fortify-app-and-rel-name.outputs.app_name }}
       #    FOD_RELEASE_NAME: ${{ steps.fortify-app-and-rel-name.outputs.release_name }}          
-
-      # TBD 
+      - name: Install CMake and Ninja    
+        uses: lukka/get-cmake@latest
+      - name: Get Conan
+        uses: turtlebrowser/get-conan@main
+      - name: Create default profile
+        run: |
+          conan profile detect --force
+      - name: Install dependencies
+        run: conan install . --output-folder=build --build=missing --settings=build_type=${{env.BUILD_TYPE}} -c tools.cmake.cmaketoolchain:generator=Ninja
+      - name: Configure CMake
+        run: cmake --preset ${{env.CMAKE_PRESET}}
+      - name: Build and Translation
+        run: |
+          cd build
+          source conanbuild.sh
+          cmake --build . --clean-first --config ${{env.BUILD_TYPE}} --verbose
+          sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify ${JVM_ARGS} -b "${FOD_APP_NAME}" -debug -verbose compile_commands.json
+          sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify -Dcom.fortify.sca.MobileBuildSessions=true ${JVM_ARGS} -b "${FOD_APP_NAME}" -debug -verbose -export-build-session "${FOD_APP_NAME}.mbs" 
+        env:
+          FOD_APP_NAME: ${{ steps.fortify-app-and-rel-name.outputs.app_name }}
+          FOD_RELEASE_NAME: ${{ steps.fortify-app-and-rel-name.outputs.release_name }}              
+          JVM_ARGS: "-Xss256M" 
 
   Security-Gate:
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: ${{ always() }}
     needs: [ FoD-SAST-Scan ]
     steps:
@@ -134,7 +158,8 @@ jobs:
           fod_release_name: ${{ steps.fortify-app-and-rel-name.outputs.release_name }}
 
   Release-To-Prod:
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: [ Quality-Gate, Security-Gate ]
     steps:
       - name: Checkout

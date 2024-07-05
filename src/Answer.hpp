@@ -13,16 +13,12 @@
 using namespace std;
 
 class Answer {
-  protected:
-    bool debug = false;
+  private:
+    bool aDebug;
 
   public:
-    void setDebug(bool debug) {
-      debug = debug;
-    }
-    bool getDebug() {
-      return debug;
-    }
+    void setDebug(bool debug) { aDebug = debug; }
+    bool getDebug() { return aDebug; }
     virtual string getRandomAnswer() = 0;
     virtual string getAnswerFromKeywords(string keywords) = 0;
 };

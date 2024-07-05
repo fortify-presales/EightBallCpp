@@ -27,9 +27,10 @@ Install Conan
 =============
 
 ```
-python -m venv venv
-.\venv\Scripts\Activate.ps1 [on Windows]
-source ./venv/bin/activate [on Linux/UNIX]
+python -m venv venv             [on Windows]
+.\venv\Scripts\Activate.ps1     [on Windows]
+python3 -m venv venv            [on Linux/UNIX]
+source ./venv/bin/activate      [on Linux/UNIX]
 pip install conan [--upgrade]
 conan profile detect --force
 ```
@@ -50,8 +51,8 @@ To build the application carry out the following:
 conan install . --output-folder=build --build=missing --settings=build_type=Release -c tools.cmake.cmaketoolchain:generator=Ninja
 cmake --preset conan-release
 cd build
-.\conanbuild.bat [Windows]
-sh ./conanbuild.sh [Linux/UNIX]
+.\conanbuild.bat        [Windows]
+sh ./conanbuild.sh      [Linux/UNIX]
 cmake --build . --clean-first --config Release --verbose
 ```
 
@@ -60,10 +61,13 @@ Note: some of the libraries used might need to be rebuilt for your environment a
 You can check the application works by running it as follows:
 
 ```
-> .\EightBall.exe will i win the lottery [Windows]
-> ./EightBall will i win the lottery [Linux/UNIX]
-MAGIC 8 BALL VERSION:1.0
-------------------------
+.\EightBall.exe will i win the lottery    [Windows]
+./EightBall will i win the lottery        [Linux/UNIX]
+ .-'''-.    
+/   _   \   
+|  (8)  | Magic 8 Ball - Version 1.0
+\   ^   /
+ '-...-'
 You have entered a question with 5 words: Will i win the lottery?
 The Magic 8 Ball says: You may rely on it.
 ```
@@ -134,6 +138,9 @@ scancentral -url YOUR_SCANCENTRAL_URL start -uptoken 6449c23f-e287-4ef2-b3db-5e7
 Fortify on Demand Scan
 ======================
 
+For a Fortify on Demand Scan you will need to carry out local translation as above. The Fortify Static Code
+Analyzer tool (and fortify.license) can be found on the Fortify on Demand "Tools" page.
+
 Once the `mbs` file has been created using the above, the Fortify Command Line tool can be used to
 upload it to Fortify on Demand and start the scan as in the following:
 
@@ -143,6 +150,8 @@ fcli fod session login [--url YOUR_FOD_URL --client-id YOUR_CLIENT_ID --client-s
 fcli fod sast-scan start --release="EightBallCpp [KAL]:main" -f FoDPackage.zip --store curScan
 fcli fod sast-scan wait-for ::curScan::
 ```
+
+There is also a GitHub Action [fod.yml](.github/workflows/fod.yml) included to carry this out automatically.
 
 Debricked SCA Scan
 ==================
