@@ -36,7 +36,7 @@ on:
         description: 'Carry out SAST scan using Fortify on Demand'
         required: false
         default: 'true'
-        
+
 # Global environment variables
 env:
   BUILD_TYPE: "Release"
@@ -138,18 +138,43 @@ jobs:
           conan install . --output-folder=build --build=missing --settings=build_type=${{env.BUILD_TYPE}} -c tools.cmake.cmaketoolchain:generator=Ninja
       - name: Configure CMake
         run: cmake --preset ${{env.CMAKE_PRESET}}
-      - name: Build and Translation
+      # Login to Fortify on Demand fcli session
+      - name: Login fcli
+        shell: bash
         run: |
-          cd build
+          fcli fod session login --url $FOD_API_URI --client-id $FOD_CLIENT_ID --client-secret $FOD_CLIENT_SECRET --session github-actions
+        env:
+          FOD_API_URI: ${{ vars.FOD_API_URL }}
+          FOD_CLIENT_ID: ${{ secrets.FOD_CLIENT_ID }}
+          FOD_CLIENT_SECRET: ${{ secrets.FOD_CLIENT_SECRET }}       
+      - name: Fortify Translation
+        working-directory: "build"
+        run: |
           source conanbuild.sh
-          cmake --build . --clean-first --config ${{env.BUILD_TYPE}} --verbose
           cmake --build . --clean-first --config ${{env.BUILD_TYPE}} --verbose
           sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify ${JVM_ARGS} -b "${FOD_APP_NAME}" -debug -verbose compile_commands.json
           sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify -Dcom.fortify.sca.MobileBuildSessions=true ${JVM_ARGS} -b "${FOD_APP_NAME}" -debug -verbose -export-build-session "${FOD_APP_NAME}.mbs" 
+          rm -f ${PACKAGE_FILE}
+          zip ${PACKAGE_FILE} "${FOD_APP_NAME}.mbs"
         env:
-          FOD_APP_NAME: ${{ steps.fortify-app-and-rel-name.outputs.app_name }}
-          FOD_RELEASE_NAME: ${{ steps.fortify-app-and-rel-name.outputs.release_name }}              
-          JVM_ARGS: "-Xss256M" 
+          PACKAGE_FILE: "package.zip"
+          FOD_APP_NAME: ${{ steps.fortify-app-and-rel-name.outputs.app_name }}    
+      - name: Fortify Scan
+        working-directory: "build"
+        run: |
+          fcli fod sast-scan start --release "${FOD_RELEASE_NAME}" --notes "${FOD_SCAN_NOTES}" -f $PACKAGE_FILE --store curScan --session github-actions
+          sleep 10
+          echo "fod_scan_id=$(fcli util var get ::curScan::)" >> $GITHUB_OUTPUT
+          fcli fod sast-scan wait-for ::curScan:: --session github-actions
+        env:
+          PACKAGE_FILE: "package.zip"
+          FOD_RELEASE_NAME: ${{ format('{0}:{1}', steps.fortify-app-and-rel-name.outputs.app_name, steps.fortify-app-and-rel-name.outputs.release_name) }}
+          FOD_SCAN_NOTES: "Triggered by GitHub Actions (${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"            
+      # Logout/Close Fortify on Demand fcli session
+      - name: Logout fcli
+        shell: bash
+        run: |
+          fcli fod session logout --session github-actions
 
   Security-Gate:
     #runs-on: ubuntu-latest
