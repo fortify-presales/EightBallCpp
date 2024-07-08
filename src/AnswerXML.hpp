@@ -10,7 +10,7 @@ class AnswerXML: public Answer {
     AnswerXML(bool debug);
     ~AnswerXML();
     string getRandomAnswer();
-    string getAnswerFromKeywords(std::string keywords);
+    string getAnswerFromKeywords(std::vector<std::string> keywords);
     void doSomethingElse();
 };
 

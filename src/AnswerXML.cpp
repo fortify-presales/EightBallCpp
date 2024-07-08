@@ -47,7 +47,7 @@ string AnswerXML::getRandomAnswer() {
     return "I have no answer";
 }
 
-string AnswerXML::getAnswerFromKeywords(string keywords) {
+string AnswerXML::getAnswerFromKeywords(std::vector<std::string> keywords) {
     // TBD
     return getRandomAnswer();
 }

@@ -13,7 +13,7 @@ class AnswerSQL: public Answer {
     AnswerSQL(bool debug);
     ~AnswerSQL();
     string getRandomAnswer();
-    string getAnswerFromKeywords(std::string keywords);
+    string getAnswerFromKeywords(std::vector<std::string> keywords);
     void doSomethingElse();
 };
 

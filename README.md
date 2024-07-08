@@ -194,6 +194,9 @@ fcli fod oss-scan wait-for ::curScan::
 
 There is also a GitHub Action [debricked.yml](.github/workflows/debricked.yml) included to carry this out automatically.
 
+TBD:
+- SQL Injection
+- Boost Smart Pointers
 ---
 
 Kevin Lee - klee2@opentext.com

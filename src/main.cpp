@@ -5,6 +5,7 @@
 #include <string>
 #include <iomanip>
 #include <fstream>
+#include <vector>
 #ifdef _WIN32
     #include <io.h>
 #endif
@@ -13,13 +14,12 @@
 #include <zlib.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <boost/algorithm/string.hpp>
 
 #include "Answer.hpp"
 #include "AnswerSQL.hpp"
 #include "AnswerXML.hpp"
 #include "Shell.hpp"
-
-using namespace std;
 
 const string exitString = "x";
 const int BUFSIZE = 255;
@@ -27,57 +27,46 @@ const string magicEightBall = "The Magic 8 Ball says: ";
 const char encryptionKey[] = "lakdsljkalkjlksdfkl";
 
 bool debug = false;
-bool useDb = false;
+bool useDb = true;  // default is to use locally created SQLite database
 
 string getVersion();
 
 int main(int argc, char* argv[]) {
 
-    cout << std::boolalpha;  
+    std::cout << std::boolalpha;  
 
     char* path = getenv("PATH");
     if (getenv("8BALL_DEBUG")) { debug = true; };
-    if (getenv("8BALL_USEDB")) { useDb = true; }
 
     SSL_library_init();
 
-    cout << " .-'''-." << endl;
-    cout << "/   _   \\" << endl;
-    cout << "|  (8)  | Magic 8 Ball - Version " << getVersion() << endl;
-    cout << "\\   ^   /" << endl;
-    cout << " '-...-'" << endl;
+    std::cout << " .-'''-." << std::endl;
+    std::cout << "/   _   \\" << std::endl;
+    std::cout << "|  (8)  | Magic 8 Ball - Version " << getVersion() << std::endl;
+    std::cout << "\\   ^   /" << std::endl;
+    std::cout << " '-...-'" << std::endl;
 
     if (debug) { 
-        cout << "  - ZLIB: " << zlibVersion() << endl;
-        cout << "  - DEBUG: " << debug << endl;
-        cout << "  - USEDB: " << useDb << endl;
-        cout << " ---" << endl;
+        std::cout << "  - ZLIB: " << zlibVersion() << std::endl;
+        //std::cout << "  - PATH: " << path;
+        std::cout << " ---" << std::endl;
     }
 
     Shell shell;
     AnswerXML aXML = AnswerXML(debug);
     AnswerSQL aSQL = AnswerSQL(debug);
-	char keywords[BUFSIZE] = "";
-    
+    vector<std::string> keywords;
     srand(time(0));
 
     if (argc >= 2) {
-        cout << "You have entered a question with " << argc-1 << " words: ";
+        std::cout << "You have entered a question with " << argc-1 << " words." << endl;
         for (int i = 1; i < argc; ++i) {
-            char* newArray = (char*)malloc (strlen(keywords) + strlen(argv[i]) + 2);
-            strcpy(newArray, keywords);
-            strcat(newArray, argv[i]);
-            strcat(newArray, (i == argc-1 ? "?" : " "));
-            strcpy(keywords, newArray);
-            free(newArray);
+            keywords.push_back(argv[i]);
         }
-        keywords[0] = toupper(keywords[0]);
-
-        cout << keywords << endl;
         if (useDb) {
-            cout << magicEightBall << aSQL.getRandomAnswer() << endl;
+            std::cout << magicEightBall << aSQL.getAnswerFromKeywords(keywords) << std::endl;
         } else {
-            cout << magicEightBall << aXML.getRandomAnswer() << endl;
+            std::cout << magicEightBall << aXML.getAnswerFromKeywords(keywords) << std::endl;
         }    
     } else {
         bool keepGoing = true;
@@ -86,8 +75,10 @@ int main(int argc, char* argv[]) {
             string question;
 
             // prompt for and get the question
-            cout << "What is your question?  (Enter 'x' to exit)" << endl;
-            getline(cin, question);
+            std::cout << "What is your question? (Enter 'x' to exit)" << std::endl;
+            std::getline(cin, question);
+            // split the question into keywords
+            boost::split(keywords, question, boost::is_any_of(" "));
 
             // this assumes that the user enters a lower case x
             if (question.compare(exitString) == 0)
@@ -96,14 +87,11 @@ int main(int argc, char* argv[]) {
                 // log questions
                 umask(0);
                 shell.execute("echo " + question + " >> questions.txt");
-                cout << magicEightBall;
-                string ans;
-                if (useDb) { 
-                    ans = aSQL.getAnswerFromKeywords(question);
+                if (useDb) {
+                    std::cout << magicEightBall << aSQL.getAnswerFromKeywords(keywords) << std::endl;
                 } else {
-                    ans = aXML.getAnswerFromKeywords(question);
-                }    
-                cout << ans << endl;
+                    std::cout << magicEightBall << aXML.getAnswerFromKeywords(keywords) << std::endl;
+                }   
             }
         }
     }

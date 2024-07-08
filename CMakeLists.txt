@@ -9,6 +9,7 @@ find_package(SQLite3 REQUIRED)
 find_package(http_parser REQUIRED)
 find_package(json-c REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(Boost REQUIRED)
 
 add_executable(${PROJECT_NAME} src/main.cpp
     src/Answer.hpp
@@ -26,3 +27,5 @@ target_link_libraries(${PROJECT_NAME} SQLite::SQLite3)
 target_link_libraries(${PROJECT_NAME} http_parser::http_parser)
 target_link_libraries(${PROJECT_NAME} json-c::json-c)
 target_link_libraries(${PROJECT_NAME} openssl::openssl)
+target_link_libraries(${PROJECT_NAME} boost::boost)
+

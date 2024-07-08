@@ -7,6 +7,7 @@
 #include <cstring>
 #include <iostream>
 #include <string>
+#include <vector>
 #include <iomanip>
 #include <fstream>
 
@@ -20,7 +21,7 @@ class Answer {
     void setDebug(bool debug) { aDebug = debug; }
     bool getDebug() { return aDebug; }
     virtual string getRandomAnswer() = 0;
-    virtual string getAnswerFromKeywords(string keywords) = 0;
+    virtual string getAnswerFromKeywords(std::vector<std::string> keywords) = 0;
 };
 
 #endif
