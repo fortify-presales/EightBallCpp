@@ -24,11 +24,27 @@ any commands. On Windows you should start a command prompt: "x64 Native Tools Co
 Install Conan
 =============
 
+Windows:
+
 ```
-python -m venv .
-.\Scripts\Activate.ps1 (Windows)
+python -m venv .venv
+.venv\Scripts\Activate.ps1
 pip install conan [--upgrade]
 conan profile detect --force
+conan remote update conancenter --url="https://center2.conan.io"
+```
+
+Linux:
+
+```
+python3 -m venv .venv
+source .venv/bin/activate
+sudo apt-get install pipx
+pipx install conan
+pipx ensurepath
+source ~/.bashrc
+conan profile detect --force
+conan remote update conancenter --url="https://center2.conan.io"
 ```
 
 This will create a `default` profile based on your environment, you can check it with:
@@ -43,6 +59,8 @@ Build the Application
 
 To build the application carry out the following:
 
+Windows:
+
 ```
 conan install . --output-folder=build --build=missing --settings=build_type=Release -c tools.cmake.cmaketoolchain:generator=Ninja
 cmake --preset conan-release
@@ -51,12 +69,34 @@ cd build
 cmake --build . --clean-first --config Release --verbose
 ```
 
+Linux/UNIX:
+
+```
+conan install . --output-folder=build --build=missing --settings=build_type=Release -c tools.cmake.cmaketoolchain:generator=Ninja
+cmake --preset conan-release
+cd build
+source conanbuild.sh
+cmake --build . --clean-first --config Release --verbose
+```
+
 Note: some of the libraries used might need to be rebuilt for your environment and so the first command might take a while.
 
 You can check the application works by running it as follows:
 
+Windows:
+
 ```
 > .\EightBall.exe am i beautiful
+You have entered a question with 3 words:
+Am i beautiful?
+The Magic 8 Ball says:
+The outlook is poor
+```
+
+Linux/UNIX:
+
+```
+> ./EightBall am i beautiful
 You have entered a question with 3 words:
 Am i beautiful?
 The Magic 8 Ball says:
@@ -71,29 +111,28 @@ For Fortify Static Code Analyzer to work, the `sourceanalyzer` executable needs 
 each "compile" command that is executed. When using CMake and Conan this can get quite complicated as the build files
 are generated. The recommended approach is for the file `compile_commands.json` to be generated via the
 `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON` option and used to dynamically construct the `sourceanalyzer` commands. 
-Note: this option is set as the default in the `CMakeLists.txt` file.
+Note: this option is set as the default in the `CMakeLists.txt` file. 
 
-An example script `bin\create_scan_file.ps1` is provided. To run the Fortify SAST Scan locally:
-
-Windows:
+Note: this works on Linux/UNIX only and can be run using the example script `bin/fortify_scan.sh`:
 
 ```
+../bin/fortify_scan.sh
+```
+
+On Windows an example script `bin\create_scan_file.ps1` is provided:
+
+```
+cd ..
 .\bin\create_scan_file.ps1
 cd build
 .\fortify_scan.bat
-```
-
-Linux/UNIX:
-
-```
-TBD
 ```
 
 If the scan is successful there will be a file called `EightBallCpp.fpr` created which you can
 open with Fortify Audit Workbench:
 
 ```
-.\auditworkbench buil\EightBallCpp.fpr
+auditworkbench EightBallCpp.fpr
 ```
 
 Uploading Results to Fortify Software Security Center
@@ -107,6 +146,7 @@ fcli ssc session login [--url YOUR_SSC_URL --ci-token=YOUR_SSC_CI_TOKEN]
 fcli ssc artifact upload --appversion="EightBallCpp:main" -f .\EightBallCpp.fpr --store curUpload
 fcli ssc artifact wait-for ::curUpload::
 ```
+
 Fortify ScanCentral SAST Scan
 =============================
 
@@ -124,10 +164,23 @@ Fortify on Demand Scan
 Once the `mbs` file has been created using the above, the Fortify Command Line tool can be used to
 upload it to Fortify on Demand and start the scan as in the following:
 
+Windows:
+
 ```
-Compress-Archive -Path .\EightBallCpp.mbs -DestinationPath FoDPackage.zip -Force
+Compress-Archive -Path .\EightBallCpp.mbs -DestinationPath fortifypackage.zip -Force
+```
+
+Linux/UNIX:
+
+```
+zip fortifypackage EightBallCpp.mbs
+```
+
+then:
+
+```
 fcli fod session login [--url YOUR_FOD_URL --client-id YOUR_CLIENT_ID --client-secret YOUR_CLIENT_SECRET]
-fcli fod sast-scan start --release="EightBallCpp [KAL]:main" -f FoDPackage.zip --store curScan
+fcli fod sast-scan start --release="EightBallCpp [KAL]:main" -f fortifypackage.zip --store curScan
 fcli fod sast-scan wait-for ::curScan::
 ```
 
@@ -137,19 +190,11 @@ Debricked SCA Scan
 Currently Debricked does not have any native support for Conan, however Conan can create CycloneDX SBOMs and these files
 can be scanned. To generate an SBOM and upload it to debricked you can carry out the following:
 
-Conan 1.4.x
-
 ```
-python -m venv .
-.\Scripts\Activate.ps1
-pip install cyclonedx-conan
-cyclonedx-conan .\conanfile.txt > sbom.json
+pipx install cyclonedx-conan
+cyclonedx-conan conanfile.txt > sbom.json
 debricked scan -r EightBallCpp -e "Lib\**" -t $Env:DEBRICKED_TOKEN
 ```
-
-Conan 2.x
-
-TBD
 
 The SBOM uploaded to Debricked can be imported into Fortify Software Security Center using the following:
 
@@ -159,10 +204,24 @@ fcli ssc artifact import-debricked --appversion="EightBallCpp:main" --repository
 
 The SBOM can also be scanned with Fortify on Demand (Debricked Integration) using the following:
 
+Windows:
+
 ```
-Compress-Archive -Path .\sbom.json -DestinationPath FoDPackage.zip -Force
+Compress-Archive -Path .\sbom.json -DestinationPath fortifypackage.zip -Force
+```
+
+Linux/UNIX:
+
+```
+zip fortifypackage sbom.json
+```
+
+then:
+
+```
+Compress-Archive -Path .\sbom.json -DestinationPath fortifypackage.zip -Force
 fcli fod session login [--url YOUR_FOD_URL --client-id YOUR_CLIENT_ID --client-secret YOUR_CLIENT_SECRET]
-fcli fod oss-scan start --release="EightBallCpp:main" -f FoDPackage.zip --store curScan
+fcli fod oss-scan start --release="EightBallCpp [KAL]:main" -f fortifypackage.zip --store curScan
 fcli fod oss-scan wait-for ::curScan::
 ```
 

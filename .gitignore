@@ -29,8 +29,11 @@ hs_err_pid*
 Lib
 Scripts
 pyvenv.cfg
+.venv
 
 # CMake
+CMakeFiles
+CMakeCache.txt
 CmakePresets.json
 CmakeUserPresets.json
 
@@ -48,3 +51,4 @@ CmakeUserPresets.json
 sbom.json
 build
 debricked.fingerprints.txt
+CMakeUserPresets.json
