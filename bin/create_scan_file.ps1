@@ -14,17 +14,16 @@ Import-Module $PSScriptRoot\modules\FortifyFunctions.psm1
 
 # Import local environment specific settings
 $EnvSettings = $(ConvertFrom-StringData -StringData (Get-Content ".\.env" | Where-Object {-not ($_.StartsWith('#'))} | Out-String))
-$AppName = $EnvSettings['SSC_APP_NAME']
-$AppVersion = $EnvSettings['SSC_APP_VER_NAME']
-$SSCUrl = $EnvSettings['SSC_URL']
-$SSCAuthToken = $EnvSettings['SSC_AUTH_TOKEN'] # CIToken
+$AppName = $EnvSettings['APP_NAME']
+$AppVersion = $EnvSettings['APP_VER_NAME']
 $JVMArgs = "-Xss256M"
 $ScanSwitches = ""
 $FortifyScanFile = "fortify_scan.bat"
 
 # Test we have Fortify installed successfully
 Test-Environment
-if ([string]::IsNullOrEmpty($AppName)) { throw "Application Name has not been set" }
+if ([string]::IsNullOrEmpty($AppName)) { $AppName="EightBallCpp" }
+if ([string]::IsNullOrEmpty($AppVersion)) { $AppVersion="1.0" }
 
 # Run the translation and scan
 
@@ -52,16 +51,16 @@ $CompileCommands = Get-Content $CompileCommandsFile -Raw | ConvertFrom-Json
 foreach ($command in $CompileCommands.command) 
 {
     $cl = $command.Replace('-external:I', "/I")
-    "sourceanalyzer '-Dcom.fortify.sca.ProjectRoot=.fortify' $JVMArgs $ScanSwitches -b ""$AppName"" -debug -verbose $cl" `
+    "sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify $JVMArgs $ScanSwitches -b ""$AppName"" -debug -verbose $cl" `
         | Out-File -Encoding UTF8 -Append $FortifyScanFile
 }
 
 # Create MBS file in case we need it
-"sourceanalyzer '-Dcom.fortify.sca.ProjectRoot=.fortify' $JVMArgs $ScanSwitches -b ""$AppName"" -debug -verbose '-Dcom.fortify.sca.MobileBuildSessions=true' -export-build-session ""$($AppName).mbs""" `
+"sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify -Dcom.fortify.sca.MobileBuildSessions=true $JVMArgs $ScanSwitches -b ""$AppName"" -debug -verbose -export-build-session ""$($AppName).mbs""" `
     | Out-File -Encoding UTF8 -Append $FortifyScanFile
 
 # Create Scan command    
-"sourceanalyzer '-Dcom.fortify.sca.ProjectRoot=.fortify' $JVMArgs $ScanSwitches -b ""$AppName"" -debug -verbose ^`
+"sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify $JVMArgs $ScanSwitches -b ""$AppName"" -debug -verbose ^`
     -rules ../etc/sast-custom-rules/example-custom-rules.xml -filter ../etc/sast-filters/example-filter.txt ^`
     -scan-policy $ScanPolicy ^`
     -build-project ""$AppName"" -build-version ""$AppVersion"" -build-label ""SNAPSHOT"" ^`

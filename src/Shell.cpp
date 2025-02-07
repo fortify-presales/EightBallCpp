@@ -1,5 +1,5 @@
 // Shell.cpp
-#include "Shell.h"
+#include "Shell.hpp"
 
 #include <stdio.h>
 #include <cstdlib>
@@ -17,8 +17,8 @@ Shell::Shell() {
     debug = false;
 }
 
-Shell::Shell(bool debug) {
-    debug = debug;
+Shell::Shell(bool d) {
+    debug = d;
 	
 	char array1[SIZEOF_COMMAND];
 	int  array2[SIZEOF_COMMAND];
@@ -26,8 +26,7 @@ Shell::Shell(bool debug) {
 	// Out-of-Bounds Read
 }
 
-int Shell::execute(string command)
-{
+int Shell::execute(string command) {
 	const char* cmd = command.c_str();
 	int returnCode = 0;
 	if (debug) { cout << "Executing command: " << command; }
@@ -36,8 +35,7 @@ int Shell::execute(string command)
 	return returnCode;
 };
 
-int Shell::interactive()
-{
+int Shell::interactive() {
 	char* cmd = new char[256];
 	const char* safe = "safe_program ";
 	int returnCode = 0;

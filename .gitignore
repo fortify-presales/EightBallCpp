@@ -51,4 +51,5 @@ CmakeUserPresets.json
 sbom.json
 build
 debricked.fingerprints.txt
+bom.xml
 CMakeUserPresets.json

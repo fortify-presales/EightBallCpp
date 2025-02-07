@@ -5,9 +5,10 @@ Help()
     # Display Help
     echo "Fortify SAST scan helper script."
     echo
-    echo "Syntax: fortify_scan.sh [p|h|v|V]"
+    echo "Syntax: fortify_scan.sh [p|t|h|v|V]"
     echo "options:"
     echo "p     set the scan policy (devops, security, classic)"
+    echo "t     Translate only - no Scan"
     echo "h     Print this Help."
     echo "v     Verbose mode."
     echo
@@ -16,7 +17,7 @@ Help()
 
 AppName="EightBallCpp"
 AppVersion="1.0"
-Policy="classic"
+DoScan=true
 JVMArgs="-Xss256M"
 ScanSwitches=""
 
@@ -28,6 +29,8 @@ while getopts ":hp:" option; do
             exit;;
         p) # Enter a scan policy
             Policy=$OPTARG;;
+        t) # Translation only
+            DoScan=false;;
         \?) # Invalid option
             echo "Error: Invalid option"
             exit;;
@@ -40,10 +43,12 @@ sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify $JVMArgs -b "$AppName" -de
 echo "Creating mobile build session"
 sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify -Dcom.fortify.sca.MobileBuildSessions=true $JVMArgs \
     -b "$AppName" -debug -verbose -export-build-session "${AppName}.mbs" 
-echo "Running scan ..."
-sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify $JVMArgs -b "$AppName" -debug -verbose \
-    -rules ../etc/sast-custom-rules/example-custom-rules.xml -filter ../etc/sast-filters/example-filter.txt \
-    -scan-policy $Policy \
-    -build-project "$AppName" -build-version "$AppVersion" -build-label "SNAPSHOT" \
-    -scan -f "${AppName}.fpr"
-FPRUtility -information -analyzerIssueCounts -project "${AppName}.fpr"
+if [ "$DoScan" = true ]; then
+    echo "Running scan ..."
+    sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify $JVMArgs -b "$AppName" -debug -verbose \
+        -rules ../etc/sast-custom-rules/example-custom-rules.xml -filter ../etc/sast-filters/example-filter.txt \
+        -scan-policy $Policy \
+        -build-project "$AppName" -build-version "$AppVersion" -build-label "SNAPSHOT" \
+        -scan -f "${AppName}.fpr"
+    FPRUtility -information -analyzerIssueCounts -project "${AppName}.fpr"
+fi

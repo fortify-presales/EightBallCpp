@@ -1,6 +1,6 @@
-// Shell.h
-#ifndef SHELL_H
-#define SHELL_H
+// Shell.hpp
+#ifndef SHELL_HPP
+#define SHELL_HPP
 
 #include <stdio.h>
 #include <cstdlib>
@@ -12,8 +12,7 @@
 
 using namespace std;
 
-class Shell
-{
+class Shell {
 public:
   Shell();
   Shell(bool debug);

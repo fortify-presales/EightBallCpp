@@ -31,6 +31,15 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:       
+    inputs:
+      runFoDSASTScan:
+        description: 'Carry out SAST scan using Fortify on Demand'
+        required: false
+        default: 'true'
+      runFoDOSSScan:
+        description: 'Carry out OSS scan using Fortify on Demand'
+        required: false
+        default: 'true'  
 
 # Global environment variables
 env:
@@ -43,22 +52,30 @@ jobs:
 
   Build-And-Unit-Test:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           # Fetch at least the immediate parents so that if this is a pull request then we can checkout the head.
           fetch-depth: 2
+      - name: Setup Python    
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
       - name: Install CMake and Ninja    
         uses: lukka/get-cmake@latest
-      - name: Get Conan
-        uses: turtlebrowser/get-conan@main
-      - name: Create default profile
+      - name: Activate virtualenv
         run: |
+          python -m venv venv
+          source ./venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+      - name: Install Conan
+        run: |
+          pip install conan
           conan profile detect --force
-      - name: Install dependencies
-        run: conan install . --output-folder=build --build=missing --settings=build_type=${{env.BUILD_TYPE}} -c tools.cmake.cmaketoolchain:generator=Ninja
+          conan install . --output-folder=build --build=missing --settings=build_type=${{env.BUILD_TYPE}} -c tools.cmake.cmaketoolchain:generator=Ninja
       - name: Configure CMake
         run: cmake --preset ${{env.CMAKE_PRESET}}
       - name: Build
@@ -68,7 +85,8 @@ jobs:
           cmake --build . --clean-first --config ${{env.BUILD_TYPE}} --verbose
 
   Quality-Gate:
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: ${{ always() }}
     needs: [ Build-And-Unit-Test ]
     steps:
@@ -80,8 +98,10 @@ jobs:
       # TBD
 
   FoD-SAST-Scan:
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: ${{ (github.event_name == 'push') || (github.event_name == 'pull_request') || (github.event.inputs.runFoDSASTScan == 'true') }}
+    needs: [ Quality-Gate ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -104,13 +124,142 @@ jobs:
       #  env:
       #    FOD_APP_NAME: ${{ steps.fortify-app-and-rel-name.outputs.app_name }}
       #    FOD_RELEASE_NAME: ${{ steps.fortify-app-and-rel-name.outputs.release_name }}          
+      - name: Setup Python    
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install CMake and Ninja    
+        uses: lukka/get-cmake@latest
+      - name: Activate virtualenv
+        run: |
+          python -m venv venv
+          source ./venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+      - name: Install Conan
+        run: |
+          pip install conan
+          conan profile detect --force
+          conan install . --output-folder=build --build=missing --settings=build_type=${{env.BUILD_TYPE}} -c tools.cmake.cmaketoolchain:generator=Ninja
+      - name: Configure CMake
+        run: cmake --preset ${{env.CMAKE_PRESET}}
+      # Login to Fortify on Demand fcli session
+      - name: Login fcli
+        shell: bash
+        run: |
+          fcli fod session login --url $FOD_API_URI --client-id $FOD_CLIENT_ID --client-secret $FOD_CLIENT_SECRET --session github-actions
+        env:
+          FOD_API_URI: ${{ vars.FOD_API_URL }}
+          FOD_CLIENT_ID: ${{ secrets.FOD_CLIENT_ID }}
+          FOD_CLIENT_SECRET: ${{ secrets.FOD_CLIENT_SECRET }}       
+      - name: Fortify Translation
+        working-directory: "build"
+        run: |
+          source conanbuild.sh
+          cmake --build . --clean-first --config ${{env.BUILD_TYPE}} --verbose
+          sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify ${JVM_ARGS} -b "${FOD_APP_NAME}" -debug -verbose compile_commands.json
+          sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify -Dcom.fortify.sca.MobileBuildSessions=true ${JVM_ARGS} -b "${FOD_APP_NAME}" -debug -verbose -export-build-session "${FOD_APP_NAME}.mbs" 
+          rm -f ${PACKAGE_FILE}
+          zip ${PACKAGE_FILE} "${FOD_APP_NAME}.mbs"
+        env:
+          PACKAGE_FILE: "package.zip"
+          FOD_APP_NAME: ${{ steps.fortify-app-and-rel-name.outputs.app_name }}    
+      - name: Fortify Scan
+        working-directory: "build"
+        run: |
+          fcli fod sast-scan start --release "${FOD_RELEASE_NAME}" --notes "${FOD_SCAN_NOTES}" -f $PACKAGE_FILE --store curScan --session github-actions
+          sleep 10
+          echo "fod_scan_id=$(fcli util var get ::curScan::)" >> $GITHUB_OUTPUT
+          fcli fod sast-scan wait-for ::curScan:: --session github-actions
+        env:
+          PACKAGE_FILE: "package.zip"
+          FOD_RELEASE_NAME: ${{ format('{0}:{1}', steps.fortify-app-and-rel-name.outputs.app_name, steps.fortify-app-and-rel-name.outputs.release_name) }}
+          FOD_SCAN_NOTES: "Triggered by GitHub Actions (${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"            
+      # Logout/Close Fortify on Demand fcli session
+      - name: Logout fcli
+        shell: bash
+        run: |
+          fcli fod session logout --session github-actions
 
-      # TBD 
+  FoD-OSS-Scan:
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
+    if: ${{ (github.event_name == 'push') || (github.event_name == 'pull_request') || (github.event.inputs.runFoDOSSScan == 'true') }}
+    needs: [ Quality-Gate ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Fetch at least the immediate parents so that if this is a pull request then we can checkout the head.
+          fetch-depth: 2
+      - name: Fortify App and Release Name
+        id: fortify-app-and-rel-name
+        uses: fortify-presales/github-actions/fortify-app-and-release-name@main
+        with:
+          default_fortify_app_name: ${{ env.DEFAULT_APP_NAME }}
+          default_fortify_release_name: ${{ github.ref_name }}
+          app_name_postfix: ${{ vars.FORTIFY_APP_NAME_POSTFIX }}       
+      - name: Setup Python    
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install CMake and Ninja    
+        uses: lukka/get-cmake@latest
+      - name: Activate virtualenv
+        run: |
+          python -m venv venv
+          source ./venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+      - name: Install Conan and Generate SBOM
+        run: |
+          pip install 'cyclonedx-python-lib>=5.0.0,<6'
+          pip install conan
+          conan profile detect --force
+          conan config install https://github.com/conan-io/conan-extensions.git
+          if [ -f ${SBOM_FILE} ]; then
+            rm ${SBOM_FILE}
+          fi
+          conan sbom:cyclonedx --format 1.4_json --requires gmp/6.2.1 | tee ${SBOM_FILE}
+        env:
+          SBOM_FILE: "sbom.json"  
+      # Login to Fortify on Demand fcli session
+      - name: Login fcli
+        shell: bash
+        run: |
+          fcli fod session login --url $FOD_API_URI --client-id $FOD_CLIENT_ID --client-secret $FOD_CLIENT_SECRET --session github-actions
+        env:
+          FOD_API_URI: ${{ vars.FOD_API_URL }}
+          FOD_CLIENT_ID: ${{ secrets.FOD_CLIENT_ID }}
+          FOD_CLIENT_SECRET: ${{ secrets.FOD_CLIENT_SECRET }}       
+      - name: Fortify Translation
+        run: |
+          if [ -f ${PACKAGE_FILE} ]; then
+            rm ${PACKAGE_FILE}
+          fi
+          zip ${PACKAGE_FILE} ${SBOM_FILE}
+        env:
+          PACKAGE_FILE: "package.zip"
+          SBOM_FILE: "sbom.json"  
+          FOD_APP_NAME: ${{ steps.fortify-app-and-rel-name.outputs.app_name }}    
+      - name: Fortify Scan
+        run: |
+          fcli fod oss-scan start --release "${FOD_RELEASE_NAME}" -f $PACKAGE_FILE --store curScan --session github-actions
+          sleep 10
+          echo "fod_scan_id=$(fcli util var get ::curScan::)" >> $GITHUB_OUTPUT
+          fcli fod oss-scan wait-for ::curScan:: --session github-actions
+        env:
+          PACKAGE_FILE: "package.zip"
+          FOD_RELEASE_NAME: ${{ format('{0}:{1}', steps.fortify-app-and-rel-name.outputs.app_name, steps.fortify-app-and-rel-name.outputs.release_name) }}
+      # Logout/Close Fortify on Demand fcli session
+      - name: Logout fcli
+        shell: bash
+        run: |
+          fcli fod session logout --session github-actions
 
   Security-Gate:
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: ${{ always() }}
-    needs: [ FoD-SAST-Scan ]
+    needs: [ FoD-SAST-Scan, FoD-OSS-Scan ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -134,7 +283,8 @@ jobs:
           fod_release_name: ${{ steps.fortify-app-and-rel-name.outputs.release_name }}
 
   Release-To-Prod:
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: [ Quality-Gate, Security-Gate ]
     steps:
       - name: Checkout

@@ -1,6 +1,6 @@
 # EightBallCpp
 
-This is an enhanced C++ version of the Fortify EightBall demo application. It uses CMake for the build
+This is an enhanced C++ version of the Fortify EightBall demo application. It uses CMake/Ninja for the build
 process and Conan to managed open source library dependencies.
 
 Pre-requisites:
@@ -8,18 +8,20 @@ Pre-requisites:
 
 The following software is required to be installed for this project.
 
- - Fortify Static Code Analyzer >= 24.2 (with Fortify License)
- - Visual Studio Professional >= 2022 (if building on Windows)
- - CMake >= 3.29.6
- - Ninja >= 1.12.1
- - Python >= 3.6
- - Debricked CLI (with Debricked Enterprise account)
+ - [Fortify Static Code Analyzer](https://www.opentext.com/en-gb/products/fortify-static-code-analyzer) >= 24.2 (with Fortify License)
+ - [Visual Studio Professional](https://visualstudio.microsoft.com/vs/) >= 2022 (if building on Windows)
+ - [GCC C++ Compiler](https://gcc.gnu.org/) >= 13.2.0 (if building on Linux/UNIX)
+ - [CMake](https://cmake.org/download/) >= 3.29.6
+ - [Ninja build system](https://ninja-build.org/) >= 1.12.1
+ - [Python](https://www.python.org/downloads/) >= 3.6
+ - [Debricked CLI](https://docs.debricked.com/tools-and-integrations/cli/debricked-cli) (with Debricked Enterprise account)
 
 Setup Environment
 =================
 
-The build environment, e.g. compilers, linkers etc needs to be set before executing
-any commands. On Windows you should start a command prompt: "x64 Native Tools Command Prompt for VS 2022".
+The build environment, e.g. compilers, linkers etc needs to be set before executing any commands. 
+On Windows you should start-up and run all commands in Visual Studio x64 Native Tools command prompt. From the Windows menu search
+for "x64 Native Tools Command Prompt for VS 2022".
 
 Install Conan
 =============
@@ -103,7 +105,6 @@ The Magic 8 Ball says:
 The outlook is poor
 ```
 
-
 Fortify SAST Scan
 =================
 
@@ -147,11 +148,12 @@ fcli ssc artifact upload --appversion="EightBallCpp:main" -f .\EightBallCpp.fpr 
 fcli ssc artifact wait-for ::curUpload::
 ```
 
+
 Fortify ScanCentral SAST Scan
 =============================
 
-Once the `mbs` file has been created using the above, the ScanCentral Command Line tool can be used to
-upload it ScanCentral SAST and start the scan as in the following:
+The scripts above will also create a Mobile Build Session `mbs` file which can be used with the ScanCentral Command Line tool 
+to start a remote scan:
 
 ```
 scancentral -url YOUR_SCANCENTRAL_URL start -uptoken 6449c23f-e287-4ef2-b3db-5e7201fb8bef -mbs .\EightBallCpp.mbs `
@@ -160,6 +162,9 @@ scancentral -url YOUR_SCANCENTRAL_URL start -uptoken 6449c23f-e287-4ef2-b3db-5e7
 
 Fortify on Demand Scan
 ======================
+
+For a Fortify on Demand Scan you will need to carry out local translation as above. The Fortify Static Code
+Analyzer tool (and fortify.license) can be found on the Fortify on Demand "Tools" page.
 
 Once the `mbs` file has been created using the above, the Fortify Command Line tool can be used to
 upload it to Fortify on Demand and start the scan as in the following:
@@ -184,6 +189,8 @@ fcli fod sast-scan start --release="EightBallCpp [KAL]:main" -f fortifypackage.z
 fcli fod sast-scan wait-for ::curScan::
 ```
 
+There is also a GitHub Action [fod.yml](.github/workflows/fod.yml) included to carry this out automatically.
+
 Debricked SCA Scan
 ==================
 
@@ -203,6 +210,8 @@ fcli ssc artifact import-debricked --appversion="EightBallCpp:main" --repository
 ```
 
 The SBOM can also be scanned with Fortify on Demand (Debricked Integration) using the following:
+
+Windows:
 
 Windows:
 
@@ -227,6 +236,9 @@ fcli fod oss-scan wait-for ::curScan::
 
 There is also a GitHub Action [debricked.yml](.github/workflows/debricked.yml) included to carry this out automatically.
 
+TBD:
+- SQL Injection
+- Boost Smart Pointers
 ---
 
 Kevin Lee - klee2@opentext.com

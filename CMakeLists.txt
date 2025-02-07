@@ -9,13 +9,15 @@ find_package(SQLite3 REQUIRED)
 find_package(http_parser REQUIRED)
 find_package(json-c REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(Boost REQUIRED)
 
 add_executable(${PROJECT_NAME} src/main.cpp
-    src/Database.h
-    src/Database.cpp
-    src/Answer.h
-    src/Answer.cpp
-    src/Shell.h
+    src/Answer.hpp
+    src/AnswerXML.hpp
+    src/AnswerXML.cpp
+    src/AnswerSQL.hpp
+    src/AnswerSQL.cpp
+    src/Shell.hpp
     src/Shell.cpp
 )
 target_include_directories(${PROJECT_NAME} PRIVATE ${EIGHTBALL_INCLUDE_DIRS})
@@ -25,3 +27,5 @@ target_link_libraries(${PROJECT_NAME} SQLite::SQLite3)
 target_link_libraries(${PROJECT_NAME} http_parser::http_parser)
 target_link_libraries(${PROJECT_NAME} json-c::json-c)
 target_link_libraries(${PROJECT_NAME} openssl::openssl)
+target_link_libraries(${PROJECT_NAME} boost::boost)
+
