@@ -213,8 +213,6 @@ The SBOM can also be scanned with Fortify on Demand (Debricked Integration) usin
 
 Windows:
 
-Windows:
-
 ```
 Compress-Archive -Path .\sbom.json -DestinationPath fortifypackage.zip -Force
 ```

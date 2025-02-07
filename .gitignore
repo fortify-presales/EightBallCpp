@@ -53,3 +53,5 @@ build
 debricked.fingerprints.txt
 bom.xml
 CMakeUserPresets.json
+
+answers.db

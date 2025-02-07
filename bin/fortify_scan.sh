@@ -37,13 +37,16 @@ while getopts ":hp:" option; do
     esac
 done
 
+if [[ "$Policy" -eq "" ]]; then
+    Policy="classic"
+fi
 echo "Using scan policy $Policy"
 echo "Running translation ..."
 sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify $JVMArgs -b "$AppName" -debug -verbose compile_commands.json
 echo "Creating mobile build session"
 sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify -Dcom.fortify.sca.MobileBuildSessions=true $JVMArgs \
     -b "$AppName" -debug -verbose -export-build-session "${AppName}.mbs" 
-if [ "$DoScan" = true ]; then
+if [ "$DoScan" == true ]; then
     echo "Running scan ..."
     sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify $JVMArgs -b "$AppName" -debug -verbose \
         -rules ../etc/sast-custom-rules/example-custom-rules.xml -filter ../etc/sast-filters/example-filter.txt \
