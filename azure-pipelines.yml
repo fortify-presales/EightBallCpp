@@ -43,14 +43,13 @@ steps:
     source .venv/bin/activate
     python -m pip install cyclonedx-conan
     python -m pip install markupsafe==2.0.1
-    echo "##vso[task.setvariable variable=VIRTUAL_ENV]$(VIRTUAL_ENV)"
-    echo "##vso[task.prependpath]$(VIRTUAL_ENV)/bin"
   displayName: 'Install Conan SBOM generator'
 - script: |
-    cyclonedx-conan conanfile.txt | sed -n -e '/^{/,$p' > sbom.json # cyclonedx-conan PATH_TO_conanfile.txt > SBOM_NAME_FILE
-    echo "##[debug]cyclonedx-conan conanfile.txt | sed -n -e '/^{/,$p' > sbom.json."
+    echo "##[debug].venv/bin/cyclonedx-conan conanfile.txt | sed -n -e '/^{/,$p' > sbom.json."
+    .venv/bin/cyclonedx-conan conanfile.txt | sed -n -e '/^{/,$p' > sbom.json
+    cat sbom.json
   displayName: 'Generate Conan SBOM'
 - script: |
-    debricked scan -r $(DEFAULT_APP_NAME) -t $(DEBRICKED_TOKEN) -e "lib/**" -e ".venv/**" .
     echo "##[debug]debricked scan -r $(DEFAULT_APP_NAME) -t $(DEBRICKED_TOKEN) -e 'lib/**' -e '.venv/**' ."
+    debricked scan -r $(DEFAULT_APP_NAME) -t $(DEBRICKED_TOKEN) -e "lib/**" -e ".venv/**" .
   displayName: 'Run Debricked scan'
