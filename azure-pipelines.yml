@@ -1,0 +1,54 @@
+# Example Pipeline with Debricked (SCA)
+#
+# In order for the pipeline to execute successfully you should create the following variables in the Pipeline UI:
+#
+#    DEBRICKED_TOKEN    - Debricked Access Token
+#
+# The pipeline makes use of the Debricked CLI tool (https://github.com/debricked/cli)
+# There are tasks which make use of a preview extension (not published to the Azure DevOps marketplace) to install this see:
+#   - DebrickedInstaller - https://github.com/fortify-presales/azure-pipelines-debricked-tasks
+# Follow the instructions on the GitHub repo above to install this extensions.
+
+name: OSS SCA with Debricked
+
+trigger:
+ branches:
+   include:
+     - main
+ paths:
+   include:
+     - 'conanfile.txt'
+     - 'conanfile.py'
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - name: DEFAULT_APP_NAME
+    value: "EightBallCpp"
+  - name: PYTHON_VERSION
+    value: "3.12.4"
+
+steps:
+- task: DebrickedInstaller@0
+  inputs:
+    version: 'latest'
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: $(PYTHON_VERSION)
+    addToPath: true
+    architecture: 'x64'
+- script: |
+    python -m venv .venv
+    source .venv/bin/activate
+    python -m pip install cyclonedx-conan
+    python -m pip install markupsafe==2.0.1
+    echo "##vso[task.setvariable variable=VIRTUAL_ENV]${env:VIRTUAL_ENV}"
+    echo "##vso[task.prependpath]${env:VIRTUAL_ENV}/bin"
+  displayName: 'Install Conan SBOM generator'
+- script: |
+    cyclonedx-conan conanfile.txt | sed -n -e '/^{/,$p' > sbom.json # cyclonedx-conan PATH_TO_conanfile.txt > SBOM_NAME_FILE
+  displayName: 'Generate Conan SBOM'
+- script: |
+    debricked scan -r "${env:DEFAULT_APP_NAME}" --access-token="${env:DEBRICKED_TOKEN}" -e "lib/**" -e ".venv/**" --verbose .
+  displayName: 'Run Debricked scan'
