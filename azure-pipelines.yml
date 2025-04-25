@@ -25,7 +25,7 @@ pool:
 
 variables:
   - name: DEFAULT_APP_NAME
-    value: "EightBallCpp"
+    value: "fortify-presales/EightBallCpp"
   - name: PYTHON_VERSION
     value: "3.12"
 
