@@ -27,7 +27,7 @@ variables:
   - name: DEFAULT_APP_NAME
     value: "EightBallCpp"
   - name: PYTHON_VERSION
-    value: "3.12.4"
+    value: "3.12"
 
 steps:
 - task: DebrickedInstaller@0
