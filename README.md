@@ -194,22 +194,32 @@ There is also a GitHub Action [fod.yml](.github/workflows/fod.yml) included to c
 Debricked SCA Scan
 ==================
 
-Currently Debricked does not have any native support for Conan, however Conan can create CycloneDX SBOMs and these files
-can be scanned. To generate an SBOM and upload it to debricked you can carry out the following:
+Currently Debricked does not have native support for Conan, however Conan can create CycloneDX SBOMs and you can
+use Debricked ability to scan an SBOM. To generate an SBOM and upload it to debricked you can carry out the following:
 
 ```
 pipx install cyclonedx-conan
 cyclonedx-conan conanfile.txt > sbom.json
-debricked scan -r EightBallCpp -e "Lib\**" -t $Env:DEBRICKED_TOKEN
+debricked fingerprint . -e "**/.fortify/**"
+debricked scan -r EightBallCpp --no-fingerprint -t YOUR_DEBRICKED_TOKEN
 ```
 
-The SBOM uploaded to Debricked can be imported into Fortify Software Security Center using the following:
+There is also a GitHub Action [debricked.yml](.github/workflows/debricked.yml) included to carry this out via a pipeline.
+
+
+The results from Debricked can be imported into Fortify Software Security Center using the fcli utility as follows:
 
 ```
 fcli ssc artifact import-debricked --appversion="EightBallCpp:main" --repository=EightBallCpp --branch=main -t YOUR_DEBRICKED_TOKEN
 ```
 
-The SBOM can also be scanned with Fortify on Demand (Debricked Integration) using the following:
+or into Fortify on Demand using:
+
+```
+fcli fod oss import-debricked --release "EightBallCpp:main" --repository=EightBallCpp --file=debricked-sbom.json --branch=main -t YOUR_DEBRICKED_TOKEN 
+```
+
+The SBOM can also be uploaded and scanned directly with Fortify on Demand (using Debricked Integration) with the following:
 
 Windows:
 
@@ -226,13 +236,9 @@ zip fortifypackage sbom.json
 then:
 
 ```
-Compress-Archive -Path .\sbom.json -DestinationPath fortifypackage.zip -Force
-fcli fod session login [--url YOUR_FOD_URL --client-id YOUR_CLIENT_ID --client-secret YOUR_CLIENT_SECRET]
-fcli fod oss-scan start --release="EightBallCpp [KAL]:main" -f fortifypackage.zip --store curScan
+fcli fod oss-scan start --release="EightBallCpp:main" -f fortifypackage.zip --store curScan
 fcli fod oss-scan wait-for ::curScan::
 ```
-
-There is also a GitHub Action [debricked.yml](.github/workflows/debricked.yml) included to carry this out automatically.
 
 TBD:
 - SQL Injection
