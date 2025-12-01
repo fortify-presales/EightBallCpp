@@ -166,18 +166,28 @@ Fortify on Demand Scan
 For a Fortify on Demand Scan you will need to carry out local translation as above. The Fortify Static Code
 Analyzer tool (and fortify.license) can be found on the Fortify on Demand "Tools" page.
 
-Once the `mbs` file has been created using the above, the Fortify Command Line tool can be used to
+Create the `mbs` file as above, zip it up and then the Fortify Command Line tool can be used to
 upload it to Fortify on Demand and start the scan as in the following:
 
 Windows:
 
 ```
+cd build
+source conanbuild.sh
+cmake --build . --clean-first --config Release --verbose
+.\fortify_scan.bat
+sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify -Dcom.fortify.sca.MobileBuildSessions=true -b EightBallCpp -debug -verbose -export-build-session EightBallCpp.mbs
 Compress-Archive -Path .\EightBallCpp.mbs -DestinationPath fortifypackage.zip -Force
 ```
 
 Linux/UNIX:
 
 ```
+cd build
+source conanbuild.sh
+cmake --build . --clean-first --config Release --verbose
+sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify -b EightBallCpp -debug -verbose compile_commands.json
+sourceanalyzer -Dcom.fortify.sca.ProjectRoot=.fortify -Dcom.fortify.sca.MobileBuildSessions=true -b EightBallCpp -debug -verbose -export-build-session EightBallCpp.mbs
 zip fortifypackage EightBallCpp.mbs
 ```
 
